@@ -86,6 +86,13 @@ Default value: `process.cwd()`
 
 代码所在的根目录,这个配置的作用是：默认transport后的代码的`id = lstrip(文件所在的路径, ptions.rootPath)`;当然，你完全可以通过函数来自定义id
 
+### options.paths
+
+Type: `String`
+Default value: `[]`
+
+寻找代码的路径
+
 ### options.alias
 Type: `object`
 Default value: `{}`
