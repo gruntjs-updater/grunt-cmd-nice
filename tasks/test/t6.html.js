@@ -1,4 +1,4 @@
-define("Users/wul/zone/grunt-cmd-nice/tasks/test/t6.html", [], function(require, exports, module) {
+define("alinw/bpms/0.0.1/test/t6.html", [], function(require, exports, module) {
     module.exports = '<!DOCTYPE html>\
 <html>\
 <head lang="en">\

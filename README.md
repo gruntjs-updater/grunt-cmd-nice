@@ -472,4 +472,8 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 
 ## Release History
 
-* 0.0.1 第一个测试版
+#### 0.0.2
+* 修复windows下路径格式的问题
+
+#### 0.0.1
+* 第一个测试版
