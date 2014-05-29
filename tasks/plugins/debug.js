@@ -70,12 +70,13 @@ Debug.prototype.execute = function(inputFile) {
     var newDependenciesMap = {};
     _.each(dependencies, function(dependency) {
         var name = dependency;
-        var dependencyExtName = path.extname(id);
+        var dependencyExtName = path.extname(name);
         if (!dependencyExtName) {
             dependencyExtName = ".js";
             dependency += dependencyExtName;
         }
-        dependency = dependency.replace(new RegExp(idExtName + "$"), self.options.postfix + idExtName);
+
+        dependency = dependency.replace(new RegExp(dependencyExtName + "$"), self.options.postfix + dependencyExtName);
         dependency = StringUtils.rstrip(dependency, {source: ".js"});
         newDependenciesMap[name] = dependency;
         newDependencies.push(dependency);
