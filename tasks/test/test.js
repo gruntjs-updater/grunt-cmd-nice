@@ -116,7 +116,7 @@ sassStyle.execute({
 });
 
 var Text = require("../plugins/text");
-var text = new Text(concat);
+var text = new Text(config);
 text.execute({
     src: path.join(__dirname, "t6.html"),
     dest: path.join(__dirname, "t6.html.js")
