@@ -22,6 +22,9 @@ var Base = function(options) {
     else {
         self.options = _.extend(self.options, options);
     }
+    if (_.isString(self.options.rootPath) && fs.existsSync(self.options.rootPath)) {
+        self.options.rootPath = self.toUnixPath(self.options.rootPath);
+    }
     self.logger = new Log(self.options.logLevel || "WARNING");
 };
 
@@ -92,6 +95,14 @@ Base.prototype.dumpFile = function(filename, content) {
     }
 
     fs.writeFileSync(filename, content, "utf-8");
+};
+
+/**
+ * 将windows路径格式转换成unix类型的路径
+ * @param pathname
+ */
+Base.prototype.toUnixPath = function(pathname) {
+    return pathname.replace(/\\/g, '/');
 };
 
 module.exports = Base;
