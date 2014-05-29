@@ -1,0 +1,97 @@
+/**
+ * User: garcia.wul (garcia.wul@alibaba-inc.com)
+ * Date: 2014/05/22
+ * Time: 22:38
+ *
+ */
+
+var fs = require("fs");
+var path = require("path");
+
+var _ = require("underscore");
+var Log = require("log");
+var beautify = require('js-beautify');
+var shutils = require("shutils");
+var filesystem = shutils.filesystem;
+
+var Base = function(options) {
+    var self = this;
+    if (!self.options) {
+        self.options = options;
+    }
+    else {
+        self.options = _.extend(self.options, options);
+    }
+    self.logger = new Log(self.options.logLevel || "WARNING");
+};
+
+/**
+ * 美化js代码
+ * @param code 代码
+ * @param type js/css/html,默认js
+ * @returns {*}
+ */
+Base.prototype.beautify = function(code, type) {
+    if (typeof type === "undefined") {
+        var type = "js";
+    }
+
+    var beautifyOptions = {
+        "indent_size": 4,
+        "indent_char": " ",
+        "indent_level": 0,
+        "indent_with_tabs": false,
+        "preserve_newlines": true,
+        "max_preserve_newlines": 10,
+        "jslint_happy": false,
+        "brace_style": "collapse",
+        "keep_array_indentation": false,
+        "keep_function_indentation": false,
+        "space_before_conditional": true,
+        "break_chained_methods": false,
+        "eval_code": false,
+        "unescape_strings": false,
+        "wrap_line_length": 0
+    };
+
+    var beautifier = null;
+    if (type === "js") {
+        beautifier = beautify.js_beautify;
+    }
+    else if (type === "css") {
+        beautifier = beautify.css_beautify;
+    }
+    else if (type === "html") {
+        beautifier = beautify.html_beautify;
+    }
+    if (beautifier) {
+        return beautifier(code, beautifyOptions);
+    }
+    return code;
+};
+
+/**
+ * 用于当解析源文件错误时，原样地输出文件
+ * @param inputFile
+ */
+Base.prototype.dumpFileBySource = function(inputFile) {
+    var self = this;
+    var content = fs.readFileSync(inputFile.src, "utf-8");
+    self.dumpFile(inputFile.dest, self.beautify(content, "js"));
+};
+
+/**
+ * 写文件
+ * @param filename
+ * @param content
+ */
+Base.prototype.dumpFile = function(filename, content) {
+    var dirName = path.dirname(filename);
+    if (!fs.existsSync(filename)) {
+        filesystem.makedirsSync(dirName);
+    }
+
+    fs.writeFileSync(filename, content, "utf-8");
+};
+
+module.exports = Base;
