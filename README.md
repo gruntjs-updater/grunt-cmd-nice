@@ -199,6 +199,9 @@ module.exports = function(grunt) {
         options: {
             debug: true,
             rootPath: path.join(process.cwd(), "src"),
+            paths: [
+                path.join(process.cwd(), "src")
+            ],
             alias: configFileContent.alias,
             aliasPaths: configFileContent.paths,
             handlebars: {
