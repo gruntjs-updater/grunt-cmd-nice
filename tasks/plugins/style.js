@@ -56,8 +56,8 @@ Style.prototype.execute = function(inputFile) {
     }).join("\n").replace(/\'/g, '\\\'');
 
     // Step 3: 先分析得到文件的id
-    var id = StringUtils.lstrip(StringUtils.lstrip(source,
-        {source: self.options.rootPath}), {source: path.sep}
+    var id = StringUtils.lstrip(StringUtils.lstrip(self.toUnixPath(source),
+        {source: self.options.rootPath}), {source: "/"}
     );
     if (_.isFunction(self.options.idRule)) {
         id = self.options.idRule.call(self, id, source);

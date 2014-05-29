@@ -58,8 +58,8 @@ LessStyle.prototype.execute = function(inputFile) {
         content = fs.readFileSync(source, "utf-8");
     }, function() {
         // Step 2: 先分析得到文件的id
-        var id = StringUtils.lstrip(StringUtils.lstrip(source,
-            {source: self.options.rootPath}), {source: path.sep}
+        var id = StringUtils.lstrip(StringUtils.lstrip(self.toUnixPath(source),
+            {source: self.options.rootPath}), {source: "/"}
         );
         if (_.isFunction(self.options.idRule)) {
             id = self.options.idRule.call(self, id, source);

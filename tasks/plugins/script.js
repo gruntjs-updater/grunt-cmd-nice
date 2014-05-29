@@ -81,8 +81,8 @@ Script.prototype.execute = function(inputFile) {
     var modifyOptions = {
         id: function() {
             return StringUtils.rstrip(StringUtils.lstrip(
-                StringUtils.lstrip(source, {source: self.options.rootPath}),
-                {source: path.sep}
+                StringUtils.lstrip(self.toUnixPath(source), {source: self.options.rootPath}),
+                {source: "/"}
             ), ".js");
         },
         dependencies: newDependencies,
