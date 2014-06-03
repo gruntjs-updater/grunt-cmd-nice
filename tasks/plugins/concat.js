@@ -39,6 +39,8 @@ var Concat = function(options) {
     Base.call(self, options);
     // 保存id和内容的对应
     self.idCache = {};
+    self.astCache = {};
+    self.dependenciesCache = {};
 };
 util.inherits(Concat, Base);
 
@@ -54,14 +56,37 @@ Concat.prototype.execute = function(inputFile) {
 
     // Step 2: 得到抽象语法树
     var cmdParser = new CmdParser();
-    var ast = cmdParser.getAst(content);
+    var ast = null;
+    var metaAst = null;
+    if (self.options.useCache && _.has(self.astCache, source) &&
+        self.astCache[source].ast
+        ) {
+        ast = self.astCache[source].ast;
+    }
+    else {
+        ast = cmdParser.getAst(content);
+    }
     if (!ast) {
         self.logger.error("Parse %s failed", source);
         self.dumpFileBySource(inputFile);
         return;
     }
 
-    var metaAst = cmdParser.parseFirst(ast);
+    if (self.options.useCache && _.has(self.astCache, source) &&
+        self.astCache[source].metaAst
+        ) {
+        metaAst = self.astCache[source].metaAst;
+    }
+    else {
+        metaAst = cmdParser.parseFirst(ast);
+        if (metaAst && self.options.useCache) {
+            self.astCache[source] = {
+                ast: ast,
+                metaAst: metaAst
+            };
+        }
+    }
+
     if (!metaAst) {
         self.logger.warning("%s is not AMD format", source);
         self.dumpFileBySource(inputFile);
@@ -69,55 +94,67 @@ Concat.prototype.execute = function(inputFile) {
     }
 
     // Step 3: 得到依赖的模块
+    var start = new Date().getTime();
     var dependencies = metaAst.dependencies;
-    var contents = [
-        content
-    ];
-    if (self.options.include !== "self") {
-        _.each(dependencies, function(dependency) {
-            var content = null;
-            var extName = path.extname(dependency);
-            var isConcat = false;
-            if (_.isArray(self.options.filters) && _.contains(self.options.filters, extName)) {
-                isConcat = true;
-            }
-            else if (_.isFunction(self.options.filters)) {
-                isConcat = self.options.filters(dependency);
-            }
-            if (self.options.filters && !isConcat) {
-                // 如果使用了filter，并且不做合并
-                return;
-            }
-            if (self.options.include === "relative") {
-                if (dependency.indexOf("../") === 0 || dependency.indexOf("./") === 0) {
-                     if (_.has(self.idCache, dependency)) {
-                        content = self.readContentFromCache(dependency);
+    var contents = [];
+    if (self.options.useCache && self.dependenciesCache.hasOwnProperty(source)) {
+        contents = self.dependenciesCache[source];
+    }
+    else {
+        contents = [content];
+        if (self.options.include !== "self") {
+            _.each(dependencies, function(dependency) {
+                var content = null;
+                var extName = path.extname(dependency);
+                var isConcat = false;
+                if (_.isArray(self.options.filters) && _.contains(self.options.filters, extName)) {
+                    isConcat = true;
+                }
+                else if (_.isFunction(self.options.filters)) {
+                    isConcat = self.options.filters(dependency);
+                }
+                if (self.options.filters && !isConcat) {
+                    // 如果使用了filter，并且不做合并
+                    return;
+                }
+                if (self.options.include === "relative") {
+                    if (dependency.indexOf("../") === 0 || dependency.indexOf("./") === 0) {
+                         if (_.has(self.idCache, dependency)) {
+                            content = self.readContentFromCache(dependency);
+                        }
+                        else {
+                            content = self.readContentForRelativePath(dependency, path.dirname(source));
+                         }
                     }
-                    else {
-                        content = self.readContentForRelativePath(dependency, path.dirname(source));
-                     }
-                }
-            }
-            else {
-                if (_.has(self.idCache, dependency)) {
-                    content = self.readContentFromCache(dependency);
-                }
-                else if (dependency.indexOf("../") === 0 || dependency.indexOf("./") === 0) {
-                    content = self.readContentForRelativePath(dependency, path.dirname(source));
                 }
                 else {
-                    content = self.readContentFromLocal(dependency);
+                    if (_.has(self.idCache, dependency)) {
+                        content = self.readContentFromCache(dependency);
+                    }
+                    else if (dependency.indexOf("../") === 0 || dependency.indexOf("./") === 0) {
+                        content = self.readContentForRelativePath(dependency, path.dirname(source));
+                    }
+                    else {
+                        content = self.readContentFromLocal(dependency);
+                    }
                 }
-            }
 
-            if (!content) {
-                return;
-            }
-            contents.push(content);
-        });
+                if (!content) {
+                    return;
+                }
+                contents.push(content);
+            });
+        }
+        if (self.options.useCache) {
+            self.dependenciesCache[source] = contents;
+        }
     }
+    self.logger.debug("[Profile] Step 3: 得到依赖的模块: " + (new Date().getTime() - start));
+    start = new Date().getTime();
     contents = contents.join((self.options.separator || ";") + "\n");
+    self.logger.debug("[Profile] Step 4: 合并: " + (new Date().getTime() - start));
     contents = self.beautify(contents, "js");
+    self.logger.debug("[Profile] Step 5: beautify: " + (new Date().getTime() - start));
     self.dumpFile(inputFile.dest, contents);
 };
 
@@ -169,18 +206,35 @@ Concat.prototype.readContentFromLocal = function(id) {
 //        self.logger.warning("Can not find local file for: ", id);
         return null;
     }
-    var content = fs.readFileSync(file, "utf-8");
-    var cmdParser = new CmdParser();
-    var ast = cmdParser.getAst(content);
-    if (!ast) {
-        self.logger.error("Parse %s failed", file);
-        return null;
+    file = path.normalize(fs.realpathSync(file));
+    var metaAst = null;
+    if (self.options.useCache && self.astCache.hasOwnProperty(file) &&
+        self.astCache[file].metaAst
+        ) {
+        metaAst = self.astCache[file].metaAst;
     }
-    var metaAst = cmdParser.parseFirst(ast);
+    else {
+        var content = fs.readFileSync(file, "utf-8");
+        var cmdParser = new CmdParser();
+        var ast = cmdParser.getAst(content);
+        if (!ast) {
+            self.logger.error("Parse %s failed", file);
+            return null;
+        }
+        metaAst = cmdParser.parseFirst(ast);
+        if (metaAst && self.options.useCache) {
+            self.astCache[file] = {
+                ast: ast,
+                metaAst: metaAst
+            };
+        }
+    }
+
     if (!metaAst) {
         self.logger.warning("%s is not AMD format", file);
         return null;
     }
+
     self.idCache[metaAst.id] = content;
     return content;
 };

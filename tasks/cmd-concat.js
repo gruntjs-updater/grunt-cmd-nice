@@ -18,6 +18,7 @@ module.exports = function(grunt) {
         var self = this;
         var options = self.options({
             separator: ";",
+            useCache: false,
             paths: [],
             filters: false,
             include: "relative"

@@ -68,6 +68,12 @@ Script.prototype.execute = function(inputFile) {
     }
     else {
         metaAst = cmdParser.parseFirst(ast);
+        if (self.options.useCache && metaAst) {
+            self.astCache[source] = {
+                ast: ast,
+                metaAst: metaAst
+            };
+        }
     }
 
     if (!metaAst) {
@@ -205,6 +211,7 @@ Script.prototype.findDependencies = function(dependency, basePath) {
     if (!realFilePath) {
         return dependencies;
     }
+    realFilePath = path.normalize(fs.realpathSync(realFilePath));
     // 2014-06-03 garcia.wul 增加从cache功能，以优化性能
     if (self.options.useCache && _.has(self.dependenciesCache, realFilePath)) {
         return self.dependenciesCache[realFilePath];
@@ -224,6 +231,12 @@ Script.prototype.findDependencies = function(dependency, basePath) {
         var cmdParser = new CmdParser();
         ast = cmdParser.getAst(content);
         metaAst = cmdParser.parseFirst(ast);
+        if (self.options.useCache && metaAst && ast) {
+            self.options.useCache = {
+                ast: ast,
+                metaAst: metaAst
+            };
+        }
     }
     if (!metaAst) {
         return dependencies;

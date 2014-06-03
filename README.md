@@ -479,6 +479,9 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 
 ## Release History
 
+#### 0.0.4
+* concat也添加 `useCache` 来提升性能
+
 #### 0.0.3
 * 添加 `useCache` 来提升性能
 
