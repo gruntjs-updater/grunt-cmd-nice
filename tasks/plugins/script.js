@@ -113,7 +113,7 @@ Script.prototype.execute = function(inputFile) {
             return StringUtils.rstrip(StringUtils.lstrip(
                 StringUtils.lstrip(self.toUnixPath(source), {source: self.options.rootPath}),
                 {source: "/"}
-            ), ".js");
+            ), {source: ".js"});
         },
         dependencies: newDependencies,
         require: function(name) {
