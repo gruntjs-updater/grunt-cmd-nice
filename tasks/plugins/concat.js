@@ -153,7 +153,7 @@ Concat.prototype.execute = function(inputFile) {
     start = new Date().getTime();
     contents = contents.join((self.options.separator || ";") + "\n");
     self.logger.debug("[Profile] Step 4: 合并: " + (new Date().getTime() - start));
-    contents = self.beautify(contents, "js");
+//    contents = self.beautify(contents, "js");
     self.logger.debug("[Profile] Step 5: beautify: " + (new Date().getTime() - start));
     self.dumpFile(inputFile.dest, contents);
 };
@@ -207,6 +207,7 @@ Concat.prototype.readContentFromLocal = function(id) {
         return null;
     }
     file = path.normalize(fs.realpathSync(file));
+    var content = fs.readFileSync(file, "utf-8");
     var metaAst = null;
     if (self.options.useCache && self.astCache.hasOwnProperty(file) &&
         self.astCache[file].metaAst
@@ -214,7 +215,6 @@ Concat.prototype.readContentFromLocal = function(id) {
         metaAst = self.astCache[file].metaAst;
     }
     else {
-        var content = fs.readFileSync(file, "utf-8");
         var cmdParser = new CmdParser();
         var ast = cmdParser.getAst(content);
         if (!ast) {
