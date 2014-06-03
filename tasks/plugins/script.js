@@ -28,37 +28,57 @@ var CmdParser = require("../utils/cmd-parser");
 var Script = function(options) {
     var self = this;
     Base.call(self, options);
+    // 2014-06-03 garcia.wul 为了提升性能，将已经读取过的文件保存到内存中
+    self.dependenciesCache = {};
+    self.astCache = {};
 };
 util.inherits(Script, Base);
 
 Script.prototype.execute = function(inputFile) {
     var self = this;
     // Step 1: 读取输入文件的内容
+    var start = new Date().getTime();
     var source = path.normalize(fs.realpathSync(inputFile.src));
     if (!fs.existsSync(source)) {
         self.logger.error("%s does not exist", source);
         return;
     }
 
-    var content = fs.readFileSync(source, "utf-8");
-
-    // Step 2: 得到抽象语法树
-    var cmdParser = new CmdParser();
-    var ast = cmdParser.getAst(content);
+    self.logger.debug("[Profile] Step 1: 读取输入文件的内容: " + (new Date().getTime() - start));
+    var ast = null;
+    if (self.options.useCache && _.has(self.astCache, source) && self.astCache[source].ast) {
+        ast = self.astCache[source].ast;
+    }
+    else {
+        var content = fs.readFileSync(source, "utf-8");
+        // Step 2: 得到抽象语法树
+        start = new Date().getTime();
+        var cmdParser = new CmdParser();
+        ast = cmdParser.getAst(content);
+    }
     if (!ast) {
         self.logger.error("Parse %s failed", source);
         self.dumpFileBySource(inputFile);
         return;
     }
 
-    var metaAst = cmdParser.parseFirst(ast);
+    var metaAst = null;
+    if (self.options.useCache && _.has(self.astCache, source) && self.astCache[source].metaAst) {
+        metaAst = self.astCache[source].metaAst;
+    }
+    else {
+        metaAst = cmdParser.parseFirst(ast);
+    }
+
     if (!metaAst) {
         self.logger.warning("%s is not AMD format", source);
         self.dumpFileBySource(inputFile);
         return;
     }
+    self.logger.debug("[Profile] Step 2: 得到抽象语法树: " + (new Date().getTime() - start));
 
     // Step 3: 得到依赖的模块
+    start = new Date().getTime();
     var dependencies = metaAst.dependencies;
 
     // Step 4: 使用alias和aliasPaths来替换dependencies
@@ -66,8 +86,10 @@ Script.prototype.execute = function(inputFile) {
         dependencies[index] = self.replaceByAlias(dependencies[index]);
         dependencies[index] = self.replaceByPaths(dependencies[index]);
     });
+    self.logger.debug("[Profile] Step 4: 使用alias和aliasPaths来替换dependencies: " + (new Date().getTime() - start));
 
     // Step 5: 递归地查找依赖关系
+    start = new Date().getTime();
     var newDependencies = [];
     _.each(dependencies, function(dependency) {
         dependency = StringUtils.rstrip(dependency, {source: ".js"});
@@ -76,8 +98,10 @@ Script.prototype.execute = function(inputFile) {
             self.findDependencies(dependency, path.normalize(path.join(source, "..")))
         );
     });
+    self.logger.debug("[Profile] Step 5: 递归地查找依赖关系: " + (new Date().getTime() - start));
 
     // Step 6: 修改成CMD格式
+    start = new Date().getTime();
     var modifyOptions = {
         id: function() {
             return StringUtils.rstrip(StringUtils.lstrip(
@@ -96,6 +120,7 @@ Script.prototype.execute = function(inputFile) {
         };
     }
     var modified = cmdParser.modify(ast, modifyOptions);
+    self.logger.debug("[Profile] Step 6: 修改成CMD格式: " + (new Date().getTime() - start));
 
     // Step 7: 输出文件
     var code = modified.print_to_string();
@@ -180,12 +205,30 @@ Script.prototype.findDependencies = function(dependency, basePath) {
     if (!realFilePath) {
         return dependencies;
     }
+    // 2014-06-03 garcia.wul 增加从cache功能，以优化性能
+    if (self.options.useCache && _.has(self.dependenciesCache, realFilePath)) {
+        return self.dependenciesCache[realFilePath];
+    }
+
     // Step 1: 读取输入文件的内容
-    var content = fs.readFileSync(realFilePath, "utf-8");
-    // Step 2: 得到抽象语法树
-    var cmdParser = new CmdParser();
-    var ast = cmdParser.getAst(content);
-    var metaAst = cmdParser.parseFirst(ast);
+    var ast = null;
+    var metaAst = null;
+    if (self.options.useCache && _.has(self.astCache, realFilePath) &&
+        self.astCache[realFilePath].metaAst
+        ) {
+        metaAst = self.astCache[realFilePath].metaAst;
+    }
+    else {
+        var content = fs.readFileSync(realFilePath, "utf-8");
+        // Step 2: 得到抽象语法树
+        var cmdParser = new CmdParser();
+        ast = cmdParser.getAst(content);
+        metaAst = cmdParser.parseFirst(ast);
+    }
+    if (!metaAst) {
+        return dependencies;
+    }
+
     // Step 3: 使用alias和aliasPaths来替换dependencies
     _.each(metaAst.dependencies, function(dependency, index) {
         metaAst.dependencies[index] = self.replaceByAlias(metaAst.dependencies[index]);
@@ -198,6 +241,9 @@ Script.prototype.findDependencies = function(dependency, basePath) {
             self.findDependencies(dependency, path.normalize(path.join(realFilePath, "..")))
         );
     });
+    if (self.options.useCache) {
+        self.dependenciesCache[realFilePath] = dependencies;
+    }
     return dependencies;
 };
 

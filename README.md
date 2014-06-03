@@ -68,7 +68,14 @@ Default value: false
 
 是否生成debug文件
 
-### options.debugOptions
+#### options.useCache
+Type: `Boolean`
+Default value: false
+
+是否使用cache来提升transport的性能
+
+
+#### options.debugOptions
 Type: `object`
 Default value:
 
@@ -86,26 +93,26 @@ Default value: `process.cwd()`
 
 代码所在的根目录,这个配置的作用是：默认transport后的代码的`id = lstrip(文件所在的路径, ptions.rootPath)`;当然，你完全可以通过函数来自定义id
 
-### options.paths
+#### options.paths
 
 Type: `String`
 Default value: `[]`
 
 寻找代码的路径
 
-### options.alias
+#### options.alias
 Type: `object`
 Default value: `{}`
 
 别名的map，比如你需要做合并，那么需要实现把别名转换成真正的名
 
-### options.aliasPaths
+#### options.aliasPaths
 Type: `object`
 Default value: `{}`
 
 路径别名的map，作用和上述的alias类似
 
-### options.handlebars
+#### options.handlebars
 Type: `object`
 Default value:
 
@@ -123,7 +130,7 @@ Default value:
 
 预编译*.handlebars文件时所需要的配置
 
-### options.sassOptions
+#### options.sassOptions
 
 Type: `object`
 Default value: `{}`
@@ -132,7 +139,7 @@ Default value: `{}`
 
 其中的options字段可以参考[node-sass#options](https://github.com/andrew/node-sass#options)。
 
-### options.lessOptions
+#### options.lessOptions
 
 Type: `object`
 Default value: `{}`
@@ -141,28 +148,28 @@ Default value: `{}`
 
 其中的options字段可以参考[using-less-configuration](http://lesscss.org/#using-less-configuration)。
 
-### options.cssOptions
+#### options.cssOptions
 
 Type: `object`
 Default value: `{}`
 
 transport css to js时需要的参数，目前就一个`paths`字段（类似`array`）。
 
-## Options for cmd_concat
+### Options for cmd_concat
 
-### options.paths
+#### options.paths
 
 Type: `array`
 Default value: `[]`
 
-### options.filters
+#### options.filters
 
 Type: `boolean` `array` `function`
 Default value: `false`
 
 是否使用过滤功能，默认false，即不使用;你可以配置成一个数组，其中的元素是各种后缀名，来只合并这些文件;或者完全自定义一个函数。
 
-### options.include
+#### options.include
 
 Type: `String`
 Default value: `relative`
@@ -471,6 +478,9 @@ module.exports = function(grunt) {
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
 
 ## Release History
+
+#### 0.0.3
+* 添加 `useCache` 来提升性能
 
 #### 0.0.2
 * 修复windows下路径格式的问题

@@ -15,6 +15,7 @@ var Script = require("../plugins/script");
 
 var config = {
     debug: true,
+    logLevel: "debug",
     rootPath: path.normalize(path.join(__dirname, "..")),
     paths: [
         path.normalize(path.join(__dirname, ".."))

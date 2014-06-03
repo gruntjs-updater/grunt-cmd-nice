@@ -25,11 +25,11 @@ var UnderscoreTemplate = require("./plugins/underscore-template");
 var Debug = require("./plugins/debug");
 
 module.exports = function (grunt) {
-
     grunt.registerMultiTask('cmd_transport', 'transport cmd', function () {
         var self = this;
         var options = this.options({
             debug: false,
+            useCache: false,
             rootPath: process.cwd(),
             paths: [],
             alias: {},
@@ -61,6 +61,8 @@ module.exports = function (grunt) {
             cssOptions: {}
         });
 
+        var parsers = {};
+
         var counter = 0;
         _.each(self.files, function(file) {
             var inputFile = {
@@ -85,7 +87,14 @@ module.exports = function (grunt) {
             }
 
             var Parser = options.parsers[extName];
-            var parser = new Parser(options);
+            var parser = null;
+            if (_.has(parsers, extName)) {
+                parser = parsers[extName];
+            }
+            else {
+                parser = new Parser(options);
+                parsers[extName] = parser;
+            }
             grunt.log.verbose.writeln("transporting: " + inputFile.src.toString().cyan);
             parser.execute(inputFile);
 
