@@ -5,9 +5,10 @@
  *
  */
 
-define(function(require) {
+define(["./z"], function(require) {
     var _ = require("_");
     var $ = require("$");
+    var z = require("z");
     require("underscore.string");
     return {};
 });

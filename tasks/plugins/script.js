@@ -98,6 +98,7 @@ Script.prototype.execute = function(inputFile) {
     start = new Date().getTime();
     var newDependencies = [];
     _.each(dependencies, function(dependency) {
+        dependency = self.getRealName(dependency, path.normalize(path.join(source, "..")));
         dependency = StringUtils.rstrip(dependency, {source: ".js"});
         newDependencies.push(dependency);
         newDependencies = _.union(newDependencies,
@@ -117,7 +118,8 @@ Script.prototype.execute = function(inputFile) {
         },
         dependencies: newDependencies,
         require: function(name) {
-            return self.replaceByPaths(self.replaceByAlias(name));
+            var newName = self.replaceByPaths(self.replaceByAlias(name));
+            return self.getRealName(newName, path.normalize(path.join(source, "..")));
         }
     };
     if (_.isFunction(self.options.idRule)) {
@@ -249,6 +251,10 @@ Script.prototype.findDependencies = function(dependency, basePath) {
     });
     _.each(metaAst.dependencies, function(dependency) {
         dependency = StringUtils.rstrip(dependency, {source: ".js"});
+        dependency = self.getRealName(dependency, basePath);
+        if (!dependency) {
+            return null;
+        }
         dependencies.push(dependency);
         dependencies = _.union(dependencies,
             self.findDependencies(dependency, path.normalize(path.join(realFilePath, "..")))
@@ -258,6 +264,31 @@ Script.prototype.findDependencies = function(dependency, basePath) {
         self.dependenciesCache[realFilePath] = dependencies;
     }
     return dependencies;
+};
+
+Script.prototype.getRealName = function(dependency, base) {
+    var self = this;
+    if (dependency.indexOf("../") === 0 || dependency.indexOf("./") === 0) {
+        var realName = path.normalize(path.join(base, dependency));
+        if (!fs.existsSync(realName) && !/\.js$/.test(realName)) {
+            realName += ".js";
+        }
+        if (!fs.existsSync(realName)) {
+            return null;
+        }
+        if (_.isFunction(self.options.idRule)) {
+            return self.options.idRule.call(self, id, realName);
+        }
+        else {
+            return StringUtils.rstrip(StringUtils.lstrip(
+                StringUtils.lstrip(self.toUnixPath(realName), {source: self.options.rootPath}),
+                {source: "/"}
+            ), {source: ".js"})
+        }
+    }
+    else {
+        return dependency;
+    }
 };
 
 module.exports = Script;

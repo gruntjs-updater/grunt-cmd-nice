@@ -1,4 +1,4 @@
-define("alinw/bpms/0.0.1/test/t1.handlebars", ["alinw/handlebars/1.3.0/handlebars"], function(require, exports, module) {
+define("test/t1.handlebars", ["alinw/handlebars/1.3.0/handlebars"], function(require, exports, module) {
     var Handlebars = require("alinw/handlebars/1.3.0/handlebars");
     var template = Handlebars.template;
     module.exports = template(function(Handlebars, depth0, helpers, partials, data) {

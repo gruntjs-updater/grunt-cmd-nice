@@ -28,18 +28,18 @@ var config = {
     aliasPaths: {
         testPath: "test"
     },
-    idRule: function(id, filePath) {
-        var self = this;
-        return idNameTemplate({
-            family: "alinw",
-            name: "bpms",
-            version: "0.0.1",
-            filename: StringUtils.rstrip(StringUtils.lstrip(
-                StringUtils.lstrip(filePath, {source: self.options.rootPath}),
-                {source: path.sep}
-            ), {source: ".js"})
-        })
-    },
+//    idRule: function(id, filePath) {
+//        var self = this;
+//        return idNameTemplate({
+//            family: "alinw",
+//            name: "bpms",
+//            version: "0.0.1",
+//            filename: StringUtils.rstrip(StringUtils.lstrip(
+//                StringUtils.lstrip(filePath, {source: self.options.rootPath}),
+//                {source: path.sep}
+//            ), {source: ".js"})
+//        })
+//    },
     handlebars: {
         id: "alinw/handlebars/1.3.0/handlebars",
         knownHelpers: [
