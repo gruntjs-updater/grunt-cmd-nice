@@ -320,7 +320,6 @@ module.exports = function(grunt) {
                     src: ["**/*.js"],
                     dest: "dist",
                     expand: true,
-                    ext: ".js",
                     cwd: "dist",
                     filter: "isFile"
                 }
