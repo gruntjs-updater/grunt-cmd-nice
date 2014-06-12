@@ -181,7 +181,7 @@ Script.prototype.replaceByPaths = function(name) {
         }
     });
     newName.push(names[names.length - 1]);
-    return newName.join(path.sep);
+    return newName.join("/");
 };
 
 /**
