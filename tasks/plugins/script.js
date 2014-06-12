@@ -165,7 +165,7 @@ Script.prototype.replaceByAlias = function(name) {
  */
 Script.prototype.replaceByPaths = function(name) {
     var self = this;
-    var names = name.split(path.sep);
+    var names = name.split("/");
     if (!names || names.length <= 1) {
         // 没有路径
         return name;
