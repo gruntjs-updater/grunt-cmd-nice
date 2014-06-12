@@ -16,7 +16,6 @@ var StringUtils = require("underscore.string");
 var HandlebarsTemplate = require("./plugins/handlebars-template");
 var Json = require("./plugins/json");
 var LessStyle = require("./plugins/less-style");
-var SassStyle = require("./plugins/sass-style");
 var Script = require("./plugins/script");
 var Style = require("./plugins/style");
 var Text = require("./plugins/text");
@@ -38,7 +37,6 @@ module.exports = function (grunt) {
                 ".handlebars": HandlebarsTemplate,
                 ".json": Json,
                 ".less": LessStyle,
-                ".scss": SassStyle,
                 ".js": Script,
                 ".css": Style,
                 ".html": Text,
