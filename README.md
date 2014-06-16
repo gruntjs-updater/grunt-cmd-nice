@@ -478,6 +478,9 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 
 ## Release History
 
+### 0.0.13
+* 使用[sass.js](https://github.com/medialize/sass.js/)来替换[node-sass](https://github.com/sass/node-sass)
+
 #### 0.0.4
 * concat也添加 `useCache` 来提升性能
 

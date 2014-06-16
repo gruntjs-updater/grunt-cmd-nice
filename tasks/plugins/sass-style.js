@@ -17,7 +17,7 @@ var CleanCSS = require("clean-css");
 var cleanCss = new CleanCSS({
     keepSpecialComments: 0
 });
-var sass = require("node-sass");
+var Sass = require("../contributes/sass/sass");
 
 var Base = require("./base");
 var CssConcat = require("../utils/css-concat");
@@ -54,7 +54,9 @@ SassStyle.prototype.execute = function(inputFile) {
     var content = fs.readFileSync(source, "utf-8");
 
     // Step 2: 编译*.sass文件
-    content = sass.renderSync(_.extend({data: content}, self.sassOptions));
+    Sass.options(self.sassOptions);
+    content = Sass.compile(content);
+//    content = sass.renderSync(_.extend({data: content}, self.sassOptions));
 
     // Step 3: 压缩CSS文件
     content = cleanCss.minify(content);
