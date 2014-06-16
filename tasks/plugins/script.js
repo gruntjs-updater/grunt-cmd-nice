@@ -45,6 +45,7 @@ Script.prototype.execute = function(inputFile) {
     }
 
     self.logger.debug("[Profile] Step 1: 读取输入文件的内容: " + (new Date().getTime() - start));
+    var cmdParser = new CmdParser();
     var ast = null;
     if (self.options.useCache && _.has(self.astCache, source) && self.astCache[source].ast) {
         ast = self.astCache[source].ast;
@@ -53,7 +54,6 @@ Script.prototype.execute = function(inputFile) {
         var content = fs.readFileSync(source, "utf-8");
         // Step 2: 得到抽象语法树
         start = new Date().getTime();
-        var cmdParser = new CmdParser();
         ast = cmdParser.getAst(content);
     }
     if (!ast) {
