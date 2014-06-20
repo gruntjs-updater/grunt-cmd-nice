@@ -48,6 +48,10 @@ Debug.prototype.execute = function(inputFile) {
         self.logger.error("Parse %s failed", source);
         return;
     }
+    if (ast.error === true) {
+        self.logger.error("Parse %s failed: %s,%s", source, ast.line, ast.col);
+        return;
+    }
 
     var metaAst = cmdParser.parseFirst(ast);
     if (!metaAst) {

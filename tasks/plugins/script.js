@@ -15,6 +15,7 @@ var Log = require("log");
 
 var Base = require("./base");
 var CmdParser = require("../utils/cmd-parser");
+var chalk = require('chalk');
 
 /**
  * 构造函数
@@ -55,11 +56,15 @@ Script.prototype.execute = function(inputFile) {
         // Step 2: 得到抽象语法树
         start = new Date().getTime();
         ast = cmdParser.getAst(content);
-    }
-    if (!ast) {
-        self.logger.error("Parse %s failed", source);
-        self.dumpFileBySource(inputFile);
-        return;
+        if (!ast) {
+            self.logger.error("Parse %s failed", source);
+            self.dumpFileBySource(inputFile);
+            return;
+        }
+        if (ast.error === true) {
+            self.logger.error("Parse %s failed: %s,%s", source, ast.line, ast.col);
+            return;
+        }
     }
 
     var metaAst = null;
@@ -232,6 +237,14 @@ Script.prototype.findDependencies = function(dependency, basePath) {
         // Step 2: 得到抽象语法树
         var cmdParser = new CmdParser();
         ast = cmdParser.getAst(content);
+        if (!ast) {
+            self.logger.error("Parse %s failed", source);
+            return dependencies;
+        }
+        if (ast.error === true) {
+            self.logger.error("Parse %s failed: %s,%s", source, ast.line, ast.col);
+            return dependencies;
+        }
         metaAst = cmdParser.parseFirst(ast);
         if (self.options.useCache && metaAst && ast) {
             self.options.useCache = {

@@ -65,11 +65,15 @@ Concat.prototype.execute = function(inputFile) {
     }
     else {
         ast = cmdParser.getAst(content);
-    }
-    if (!ast) {
-        self.logger.error("Parse %s failed", source);
-        self.dumpFileBySource(inputFile);
-        return;
+        if (!ast) {
+            self.logger.error("Parse %s failed", source);
+            self.dumpFileBySource(inputFile);
+            return;
+        }
+        if (ast.error === true) {
+            self.logger.error("Parse %s failed: %s,%s", source, ast.line, ast.col);
+            return;
+        }
     }
 
     if (self.options.useCache && _.has(self.astCache, source) &&
@@ -179,6 +183,10 @@ Concat.prototype.readContentForRelativePath = function(id, dirName) {
         self.logger.error("Parse %s failed", newPath);
         return null;
     }
+    if (ast.error === true) {
+        self.logger.error("Parse %s failed: %s,%s", source, ast.line, ast.col);
+        return null;
+    }
     var metaAst = cmdParser.parseFirst(ast);
     if (!metaAst) {
         self.logger.warning("%s is not AMD format", newPath);
@@ -219,6 +227,10 @@ Concat.prototype.readContentFromLocal = function(id) {
         var ast = cmdParser.getAst(content);
         if (!ast) {
             self.logger.error("Parse %s failed", file);
+            return null;
+        }
+        if (ast.error === true) {
+            self.logger.error("Parse %s failed: %s,%s", source, ast.line, ast.col);
             return null;
         }
         metaAst = cmdParser.parseFirst(ast);

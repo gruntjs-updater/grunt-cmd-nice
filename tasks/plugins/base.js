@@ -13,6 +13,7 @@ var Log = require("log");
 var beautify = require('js-beautify');
 var shutils = require("shutils");
 var filesystem = shutils.filesystem;
+var chalk = require("chalk");
 
 var Base = function(options) {
     var self = this;
@@ -26,6 +27,11 @@ var Base = function(options) {
         self.options.rootPath = self.toUnixPath(self.options.rootPath);
     }
     self.logger = new Log(self.options.logLevel || "WARNING");
+    var errorLog = self.logger.error;
+    self.logger.error = function(message) {
+        var errorMessage = chalk.styles.red.open + message + chalk.styles.red.close;
+        errorLog.apply(this, _.union([errorMessage], _.toArray(arguments).slice(1)));
+    }
 };
 
 /**

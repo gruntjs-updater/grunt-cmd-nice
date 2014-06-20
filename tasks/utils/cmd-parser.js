@@ -18,7 +18,21 @@ var CmdParser = function() {};
  * @param options
  */
 CmdParser.prototype.getAst = function(code, options) {
-    return UglifyJS.parse(code, options || {});
+    var ast = null;
+    try {
+        ast = UglifyJS.parse(code, options || {});
+    } catch(e) {
+        if (e instanceof UglifyJS.JS_Parse_Error) {
+            ast = {
+                error: true,
+                line: e.line,
+                col: e.col,
+                message: e.message,
+                stack: e.stack
+            }
+        }
+    }
+    return ast;
 };
 
 /**
