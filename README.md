@@ -366,11 +366,49 @@ module.exports = function(grunt) {
         release: {
             files: [
                 {
-                    src: ["**/*.less"],
+                    src: ["**/*.js"],
                     dest: "dist",
                     expand: true,
-                    ext: ".css",
-                    cwd: "src",
+                    ext: ".js",
+                    cwd: "dist",
+                    filter: function(filePath) {
+                        var baseName = path.basename(filePath);
+                        return !/\.json\.js$/.test(baseName) &&
+                            !/\.handlebars\.js$/.test(baseName) &&
+                            !/\.css\.js$/.test(baseName) &&
+                            !/\.less\.js$/.test(baseName) &&
+                            !/\.scss\.js$/.test(baseName)
+                },
+                {
+                    src: ["**/*.json.js"],
+                    dest: "dist",
+                    expand: true,
+                    ext: ".json.js",
+                    cwd: "dist",
+                    filter: "isFile"
+                },
+                {
+                    src: ["**/*.handlebars.js"],
+                    dest: "dist",
+                    expand: true,
+                    ext: ".handlebars.js",
+                    cwd: "dist",
+                    filter: "isFile"
+                },
+                {
+                    src: ["**/*.css.js"],
+                    dest: "dist",
+                    expand: true,
+                    ext: ".css.js",
+                    cwd: "dist",
+                    filter: "isFile"
+                },
+                {
+                    src: ["**/*.less.js"],
+                    dest: "dist",
+                    expand: true,
+                    ext: ".less.js",
+                    cwd: "dist",
                     filter: "isFile"
                 }
             ]
