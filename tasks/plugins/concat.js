@@ -152,6 +152,8 @@ Concat.prototype.execute = function(inputFile) {
         if (self.options.useCache) {
             self.dependenciesCache[source] = contents;
         }
+        // fix 佛山发现的依赖库被合并了两次的bug 2014-07-16
+        self.idCache[metaAst.id] = content;
     }
     self.logger.debug("[Profile] Step 3: 得到依赖的模块: " + (new Date().getTime() - start));
     start = new Date().getTime();
