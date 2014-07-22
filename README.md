@@ -516,6 +516,9 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 
 ## Release History
 
+### 0.0.15
+* 修复佛山发现的在合并时的一个bug
+
 ### 0.0.14
 * 对JS代码解析时，增加对语法错误的文件的报错提示
 
