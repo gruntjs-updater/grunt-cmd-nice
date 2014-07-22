@@ -516,6 +516,9 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 
 ## Release History
 
+### 0.1.0
+* 正式的第一个版本
+
 ### 0.0.15
 * 修复佛山发现的在合并时的一个bug
 
