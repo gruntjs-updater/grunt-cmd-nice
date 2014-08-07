@@ -95,5 +95,6 @@ LessStyle.prototype.execute = function(inputFile) {
     });
     runner.write();
     runner.end();
+    return true;
 };
 module.exports = LessStyle;

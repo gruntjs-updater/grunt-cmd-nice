@@ -157,11 +157,14 @@ Concat.prototype.execute = function(inputFile) {
     }
     self.logger.debug("[Profile] Step 3: 得到依赖的模块: " + (new Date().getTime() - start));
     start = new Date().getTime();
+    contents = _.map(contents, function(content) {
+        return StringUtils.rstrip(content, {source: ";"});
+    });
     contents = contents.join((self.options.separator || ";") + "\n");
+    contents = StringUtils.rstrip(contents, {source: ";"}) + (self.options.separator || ";");
     self.logger.debug("[Profile] Step 4: 合并: " + (new Date().getTime() - start));
-//    contents = self.beautify(contents, "js");
-    self.logger.debug("[Profile] Step 5: beautify: " + (new Date().getTime() - start));
     self.dumpFile(inputFile.dest, contents);
+    return true;
 };
 
 Concat.prototype.readContentFromCache = function(id) {

@@ -24,7 +24,7 @@ var UnderscoreTemplate = require("./plugins/underscore-template");
 
 var Debug = require("./plugins/debug");
 
-module.exports = function (grunt) {
+module.exports = function (grunt, done) {
     grunt.registerMultiTask('cmd_transport', 'transport cmd', function () {
         var self = this;
         var options = this.options({
@@ -64,6 +64,22 @@ module.exports = function (grunt) {
         var parsers = {};
 
         var counter = 0;
+        var statistics = {
+            transport: {
+            },
+            debug: {}
+        };
+        _.each(options.parsers, function(value, key) {
+            statistics.transport[key] = {
+                success: 0,
+                fail: 0
+            };
+            statistics.debug[key] = {
+                success: 0,
+                fail: 0
+            };
+        });
+
         _.each(self.files, function(file) {
             var inputFile = {
                 src: null,
@@ -95,22 +111,36 @@ module.exports = function (grunt) {
                 parser = new Parser(options);
                 parsers[extName] = parser;
             }
-            grunt.log.verbose.writeln("transporting: " + inputFile.src.toString().cyan);
-            parser.execute(inputFile);
+            grunt.log.writeln("transporting: " + inputFile.src.toString().cyan);
+            if (parser.execute(inputFile) === true) {
+                statistics.transport[extName].success += 1;
+            }
+            else {
+                statistics.transport[extName].fail += 1;
+            }
 
             if (options.debug) {
                 var debug = new Debug(options.debugOptions);
 
-                debug.execute({
+                var result = debug.execute({
                     src: inputFile.dest,
                     dest: inputFile.dest.replace(
                         new RegExp(extName === ".js" ? ".js$" : (extName + ".js$")),
                         options.debugOptions.postfix + (extName === ".js" ? "" : extName) + ".js")
                 });
+                if (result) {
+                    statistics.debug[extName].success += 1;
+                }
+                else {
+                    statistics.debug[extName].fail += 1;
+                }
             }
 
             ++ counter;
         });
         grunt.log.writeln("transport " + counter.toString().cyan + " files");
+        if (_.isFunction(done)) {
+            done(statistics);
+        }
     });
 };

@@ -14,8 +14,6 @@ var CmdParser = function() {};
 
 /**
  * 解析得到抽象语法树
- * @param code
- * @param options
  */
 CmdParser.prototype.getAst = function(code, options) {
     var ast = null;
@@ -33,6 +31,24 @@ CmdParser.prototype.getAst = function(code, options) {
         }
     }
     return ast;
+};
+
+/**
+ * 解析出所有的`define`
+ */
+CmdParser.prototype.parseAll = function(ast) {
+    var self = this;
+    var metaResults = [];
+    var walker = new UglifyJS.TreeWalker(function(node, descend) {
+        if (node instanceof UglifyJS.AST_Call && node.expression.name === DEFINE_NAME) {
+            var define = self.getDefine(node);
+            if (define) {
+                metaResults.push(define);
+            }
+        }
+    });
+    ast.walk(walker);
+    return metaResults;
 };
 
 /**
@@ -269,17 +285,16 @@ CmdParser.prototype.parseDependencies = function(factory) {
 
 /**
  * 替换`require`中所有的字符串，目标是将其替换成别名对应的字符串
- * 这里的`require`包括两种：require("jquery")和require.async("jquery")
+ * 这里的`require`包括两种：require("jquery")
  * 为了扩展性比较强，这个的`require`可以是函数、对象
  * （1）如果是函数，函数原型应该类似:function(value); 形参value将会是是require中的字符串
  * （2）如果是对象，则应该是一个别名的map
  * @param ast
  * @param requireName
  * @param require
- * @param async
  *
  */
-CmdParser.prototype.replaceRequires = function(ast, requireName, require, async) {
+CmdParser.prototype.replaceRequires = function(ast, requireName, require) {
     var self = this;
 
     var makeFunction = function(fn) {
@@ -313,7 +328,6 @@ CmdParser.prototype.replaceRequires = function(ast, requireName, require, async)
     };
 
     var requireFn = makeFunction(require);
-    var asyncFn = makeFunction(async);
     var transformer = new UglifyJS.TreeTransformer(function(node, descend) {
         if (requireFn &&
             node instanceof UglifyJS.AST_Call &&
@@ -321,13 +335,6 @@ CmdParser.prototype.replaceRequires = function(ast, requireName, require, async)
             node.args.length > 0
             ) {
             return replaceChild(node, requireFn);
-        }
-        if (asyncFn &&
-            node instanceof UglifyJS.AST_Call &&
-            node.start.value === requireName &&
-            node.expression.property === "async"
-            ) {
-            return replaceChild(node, asyncFn);
         }
     });
     return ast.transform(transformer);

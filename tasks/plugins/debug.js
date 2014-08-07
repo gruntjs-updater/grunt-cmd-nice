@@ -94,6 +94,7 @@ Debug.prototype.execute = function(inputFile) {
     var code = modified.print_to_string();
     code = self.beautify(code, "js");
     self.dumpFile(inputFile.dest, code);
+    return true;
 };
 
 module.exports = Debug;
