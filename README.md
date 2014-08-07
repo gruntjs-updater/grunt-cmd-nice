@@ -516,6 +516,13 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 
 ## Release History
 
+### 0.1.1
+* 合并时的seperator优化
+* 增加统计的回掉功能
+
+### 0.1.0
+* 先正式发布一版
+
 ### 0.0.15
 * 修复佛山发现的在合并时的一个bug
 
