@@ -124,7 +124,9 @@ Script.prototype.execute = function(inputFile) {
         dependencies: newDependencies,
         require: function(name) {
             var newName = self.replaceByPaths(self.replaceByAlias(name));
-            return self.getRealName(newName, path.normalize(path.join(source, "..")));
+            newName = self.getRealName(newName, path.normalize(path.join(source, "..")));
+            newName = StringUtils.rstrip(newName, {source: ".js"});
+            return newName;
         }
     };
     if (_.isFunction(self.options.idRule)) {

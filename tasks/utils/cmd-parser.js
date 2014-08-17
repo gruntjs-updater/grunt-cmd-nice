@@ -91,15 +91,13 @@ CmdParser.prototype.parseFirst = function(ast) {
  * （1）id: 指定id;如果通过这个参数传入了id，那么使用改id;否则使用代码分析出来的id
  * （2）dependencies: 传入之前所分析好的依赖，得是一个数组
  * （3）require: 对`require`中的字符串所在的处理的函数、对象
- * （4）async：类似`require`，只不过时require.async
  */
 CmdParser.prototype.modify = function(ast, opt) {
     var self = this;
     var options = {
         id: null,
         dependencies: null,
-        require: null,
-        async : null
+        require: null
     };
     if (_.isObject(opt)) {
         options = _.extend(options, opt);
@@ -172,7 +170,7 @@ CmdParser.prototype.modify = function(ast, opt) {
     });
     ast = ast.transform(transformer);
     if (options.require || options.async) {
-        ast = self.replaceRequires(ast, requireName, options.require, options.async);
+        ast = self.replaceRequires(ast, requireName, options.require);
     }
     return ast;
 };

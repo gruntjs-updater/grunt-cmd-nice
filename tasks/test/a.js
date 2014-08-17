@@ -8,6 +8,6 @@
 define(function (require, exports, module) {
     'use strict';
     var $ = require("$");
-    var b = require("./b");
+    var b = require("./b.js");
     return {};
 });
