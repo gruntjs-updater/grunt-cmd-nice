@@ -189,7 +189,7 @@ Concat.prototype.readContentForRelativePath = function(id, dirName) {
         return null;
     }
     if (ast.error === true) {
-        self.logger.error("Parse %s failed: %s,%s", source, ast.line, ast.col);
+        self.logger.error("Parse %s failed: %s,%s", newPath, ast.line, ast.col);
         return null;
     }
     var metaAst = cmdParser.parseFirst(ast);
@@ -235,7 +235,7 @@ Concat.prototype.readContentFromLocal = function(id) {
             return null;
         }
         if (ast.error === true) {
-            self.logger.error("Parse %s failed: %s,%s", source, ast.line, ast.col);
+            self.logger.error("Parse %s failed: %s,%s", file, ast.line, ast.col);
             return null;
         }
         metaAst = cmdParser.parseFirst(ast);

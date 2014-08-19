@@ -1,59 +1,58 @@
 {
-    "name": "grunt-cmd-nice",
-    "description": "another transport javascript into cmd",
-    "version": "0.1.2",
-    "homepage": "https://github.com/magicsky/grunt-cmd-nice",
-    "author": {
-        "name": "garcia.wul",
-        "email": "garcia.wul@alibaba-inc.com",
-        "url": "https://github.com/magicsky/grunt-cmd-nice"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/magicsky/grunt-cmd-nice.git"
-    },
-    "bugs": {
-        "url": "https://github.com/magicsky/grunt-cmd-nice/issues"
-    },
-    "licenses": [
-        {
-            "type": "MIT",
-            "url": "https://github.com/magicsky/grunt-cmd-nice/blob/master/LICENSE-MIT"
-        }
-    ],
-    "engines": {
-        "node": ">= 0.8.0"
-    },
-    "scripts": {
-        "test": "grunt test"
-    },
-    "devDependencies": {
-        "grunt-contrib-jshint": "~0.6.0",
-        "grunt-contrib-clean": "~0.4.0",
-        "grunt-contrib-nodeunit": "~0.2.0",
-        "grunt": "~0.4.2"
-    },
-    "peerDependencies": {
-        "grunt": "~0.4.2"
-    },
-    "keywords": [
-        "gruntplugin"
-    ],
-    "dependencies": {
-        "chalk": "^0.4.0",
-        "clean-css": "^2.1.8",
-        "css-parse": "^1.7.0",
-        "css-stringify": "^1.4.1",
-        "handlebars": "^1.3.0",
-        "js-beautify": "^1.5.1",
-        "less": "^1.7.0",
-        "log": "^1.4.0",
-        "makeerror": "^1.0.8",
-        "q": "^1.0.1",
-        "shutils": "0.0.0",
-        "through": "^2.3.4",
-        "uglify-js": "^2.4.13",
-        "underscore": "^1.6.0",
-        "underscore.string": "^2.3.3"
+  "name": "grunt-cmd-nice",
+  "description": "another transport javascript into cmd",
+  "version": "0.1.3",
+  "homepage": "https://github.com/magicsky/grunt-cmd-nice",
+  "author": {
+    "name": "garcia.wul",
+    "email": "garcia.wul@alibaba-inc.com",
+    "url": "https://github.com/magicsky/grunt-cmd-nice"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/magicsky/grunt-cmd-nice.git"
+  },
+  "bugs": {
+    "url": "https://github.com/magicsky/grunt-cmd-nice/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/magicsky/grunt-cmd-nice/blob/master/LICENSE-MIT"
     }
+  ],
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-contrib-clean": "~0.4.0",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt": "~0.4.2"
+  },
+  "peerDependencies": {
+    "grunt": "~0.4.2"
+  },
+  "keywords": [
+    "gruntplugin"
+  ],
+  "dependencies": {
+    "chalk": "^0.4.0",
+    "clean-css": "^2.1.8",
+    "css-parse": "^1.7.0",
+    "css-stringify": "^1.4.1",
+    "handlebars": "^1.3.0",
+    "js-beautify": "^1.5.1",
+    "less": "^1.7.0",
+    "log": "^1.4.0",
+    "makeerror": "^1.0.8",
+    "q": "^1.0.1",
+    "shutils": "0.0.0",
+    "uglify-js": "^2.4.13",
+    "underscore": "^1.6.0",
+    "underscore.string": "^2.3.3"
+  }
 }

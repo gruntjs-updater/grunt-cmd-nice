@@ -241,11 +241,11 @@ Script.prototype.findDependencies = function(dependency, basePath) {
         var cmdParser = new CmdParser();
         ast = cmdParser.getAst(content);
         if (!ast) {
-            self.logger.error("Parse %s failed", source);
+            self.logger.error("Parse %s failed", realFilePath);
             return dependencies;
         }
         if (ast.error === true) {
-            self.logger.error("Parse %s failed: %s,%s", source, ast.line, ast.col);
+            self.logger.error("Parse %s failed: %s,%s", realFilePath, ast.line, ast.col);
             return dependencies;
         }
         metaAst = cmdParser.parseFirst(ast);
