@@ -18,7 +18,6 @@ var cleanCss = new CleanCSS({
     keepSpecialComments: 0
 });
 var Q = require("q");
-var through = require("through");
 
 var Base = require("./base");
 var CssConcat = require("../utils/css-concat");
