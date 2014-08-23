@@ -15,6 +15,7 @@ var Handlebars = require("handlebars");
 
 var Base = require("./base");
 var CmdParser = require("../utils/cmd-parser");
+var Q = require("q");
 
 /**
  * 构造函数
@@ -37,11 +38,15 @@ util.inherits(Concat, Base);
 
 Concat.prototype.execute = function(inputFile) {
     var self = this;
+    var deferred = Q.defer();
     // Step 1: 读取输入文件的内容
     var source = path.normalize(fs.realpathSync(inputFile.src));
     if (!fs.existsSync(source)) {
         self.logger.error("%s does not exist", source);
-        return;
+        process.nextTick(function() {
+            deferred.reject();
+        });
+        return deferred.promise;
     }
     var content = fs.readFileSync(source, "utf-8");
 
@@ -59,11 +64,17 @@ Concat.prototype.execute = function(inputFile) {
         if (!ast) {
             self.logger.error("Parse %s failed", source);
             self.dumpFileBySource(inputFile);
-            return;
+            process.nextTick(function() {
+                deferred.reject();
+            });
+            return deferred.promise;
         }
         if (ast.error === true) {
             self.logger.error("Parse %s failed: %s,%s", source, ast.line, ast.col);
-            return;
+            process.nextTick(function() {
+                deferred.reject();
+            });
+            return deferred.promise;
         }
     }
 
@@ -85,7 +96,10 @@ Concat.prototype.execute = function(inputFile) {
     if (!metaAst) {
         self.logger.warning("%s is not AMD format", source);
         self.dumpFileBySource(inputFile);
-        return;
+        process.nextTick(function() {
+            deferred.reject();
+        });
+        return deferred.promise;
     }
 
     // Step 3: 得到依赖的模块
@@ -129,7 +143,10 @@ Concat.prototype.execute = function(inputFile) {
     contents = contents.join((self.options.separator || ";") + "\n");
     contents = StringUtils.rstrip(contents, {source: ";"}) + (self.options.separator || ";");
     self.dumpFile(inputFile.dest, contents);
-    return true;
+    process.nextTick(function() {
+        deferred.resolve();
+    });
+    return deferred.promise;
 };
 
 Concat.prototype.readContentFromCache = function(id) {
@@ -181,7 +198,6 @@ Concat.prototype.readContentFromLocal = function(id) {
         return false;
     });
     if (!file) {
-//        self.logger.warning("Can not find local file for: ", id);
         return null;
     }
     file = path.normalize(fs.realpathSync(file));

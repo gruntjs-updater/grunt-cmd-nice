@@ -1,7 +1,7 @@
 /**
  * User: garcia.wul (garcia.wul@alibaba-inc.com)
- * Date: 2014/05/26
- * Time: 16:16
+ * Date: 2014/08/23
+ * Time: 20:20
  *
  */
 
@@ -12,17 +12,16 @@ var util = require("util");
 var _ = require("underscore");
 var StringUtils = require("underscore.string");
 var Concat = require("./plugins/concat");
+var Debug = require("./plugins/debug");
 
 module.exports = function(grunt, done) {
-    grunt.registerMultiTask("cmd_concat", "concat cmd files", function() {
+    grunt.registerMultiTask("cmd_debug", "create cmd debug files", function() {
         var self = this;
         var async = self.async();
         var options = self.options({
-            separator: ";",
-            useCache: false,
-            paths: []
+            postfix: "-debug"
         });
-        var concat = new Concat(options);
+        var debug = new Debug(options);
         var counter = 0;
         var size = self.files.length;
         var statistics = {
@@ -44,8 +43,8 @@ module.exports = function(grunt, done) {
                 grunt.log.error("Can not recognise src ...");
                 -- size;
             }
-            grunt.log.writeln("concat: " + inputFile.src.toString().cyan);
-            concat.execute(inputFile).then(function() {
+            grunt.log.writeln("creating debug file: " + inputFile.src.toString().cyan);
+            debug.execute(inputFile).then(function() {
                 statistics.success += 1;
             }).fail(function() {
                 statistics.fail += 1;
@@ -54,7 +53,7 @@ module.exports = function(grunt, done) {
                 size -= 1;
                 if (size <= 0) {
                     async();
-                    grunt.log.writeln("concat " + counter.toString().cyan + " files");
+                    grunt.log.writeln("created " + counter.toString().cyan + " debug files");
                     if (_.isFunction(done)) {
                         done(statistics);
                     }

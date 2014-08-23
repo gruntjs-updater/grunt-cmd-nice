@@ -20,6 +20,7 @@ var Sass = require("../contributes/sass/sass");
 
 var Base = require("./base");
 var CssConcat = require("../utils/css-concat");
+var Q = require("q");
 
 var amdTemplate = Handlebars.compile([
     'define("{{{id}}}", [], function(require, exports, module) {',
@@ -44,18 +45,21 @@ util.inherits(SassStyle, Base);
 
 SassStyle.prototype.execute = function(inputFile) {
     var self = this;
+    var deferred = Q.defer();
     // Step 1: 读取输入文件的内容
     var source = path.normalize(fs.realpathSync(inputFile.src));
     if (!fs.existsSync(source)) {
         self.logger.error("%s does not exist", source);
-        return;
+        process.nextTick(function() {
+            deferred.reject();
+        });
+        return deferred.promise;
     }
     var content = fs.readFileSync(source, "utf-8");
 
     // Step 2: 编译*.sass文件
     Sass.options(self.sassOptions);
     content = Sass.compile(content);
-//    content = sass.renderSync(_.extend({data: content}, self.sassOptions));
 
     // Step 3: 压缩CSS文件
     content = cleanCss.minify(content);
@@ -68,7 +72,7 @@ SassStyle.prototype.execute = function(inputFile) {
         {source: self.options.rootPath}), {source: "/"}
     );
     if (_.isFunction(self.options.idRule)) {
-        id = self.options.idRule.call(self, id, source);
+        id = self.options.idRule.call(self, id);
     }
 
     // Step 5: 得到AMD格式的代码
@@ -78,7 +82,10 @@ SassStyle.prototype.execute = function(inputFile) {
     });
     code = self.beautify(code, "js");
     self.dumpFile(inputFile.dest, code);
-    return true;
+    process.nextTick(function() {
+        deferred.resolve();
+    });
+    return deferred.promise;
 };
 
 module.exports = SassStyle;

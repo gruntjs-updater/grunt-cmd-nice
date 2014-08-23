@@ -17,6 +17,7 @@ var chalk = require("chalk");
 var moment = require("moment");
 var Handlebars = require("handlebars");
 var fmt = require('util').format;
+var ErrorCreate = require('error-create');
 
 var logMessageTemplate = Handlebars.compile(
     "[{{{level}}} {{{now}}}] {{{message}}}\n"
@@ -58,6 +59,16 @@ var Base = function(options) {
         self.options.rootPath = self.toUnixPath(self.options.rootPath);
     }
     self.logger = new Log(self.options.logLevel || "WARNING");
+    self.errorCodes = {
+        FILE_NOT_EXIST: "file not exist",
+        PARSE_AST_FAILED: "parse ast failed",
+        SCRIPT_SYNTAX_ERROR: "script syntax error"
+    };
+};
+
+Base.prototype.createError = function(message, errorCode, options) {
+    var self = this;
+    return ErrorCreate("CmdNiceError")(message, self.errorCodes[errorCode], options);
 };
 
 /**

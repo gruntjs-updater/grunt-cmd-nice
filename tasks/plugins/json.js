@@ -12,6 +12,7 @@ var _ = require("underscore");
 var StringUtils = require("underscore.string");
 var Handlebars = require("handlebars");
 var Base = require("./base");
+var Q = require("q");
 
 var amdTemplate = Handlebars.compile([
     'define("{{{id}}}", [], function(require, exports, module) {',
@@ -27,10 +28,14 @@ util.inherits(Json, Base);
 
 Json.prototype.execute = function(inputFile) {
     var self = this;
+    var deferred = Q.defer();
     var source = path.normalize(fs.realpathSync(inputFile.src));
     if (!fs.existsSync(source)) {
         self.logger.error("%s does not exist", source);
-        return;
+        process.nextTick(function() {
+            deferred.reject();
+        });
+        return deferred.promise;
     }
 
     // Step 1: 读取文件
@@ -41,7 +46,7 @@ Json.prototype.execute = function(inputFile) {
         {source: self.options.rootPath}), {source: "/"}
     );
     if (_.isFunction(self.options.idRule)) {
-        id = self.options.idRule.call(self, id, source);
+        id = self.options.idRule.call(self, id);
     }
 
      // Step 3: 得到AMD格式的代码
@@ -52,7 +57,10 @@ Json.prototype.execute = function(inputFile) {
 
     code = self.beautify(code, "js");
     self.dumpFile(inputFile.dest, code);
-    return true;
+    process.nextTick(function() {
+        deferred.resolve();
+    });
+    return deferred.promise;
 };
 
 module.exports = Json;

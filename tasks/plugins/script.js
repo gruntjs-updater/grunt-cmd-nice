@@ -12,6 +12,7 @@ var _ = require("underscore");
 var StringUtils = require("underscore.string");
 var Base = require("./base");
 var CmdParser = require("../utils/cmd-parser");
+var Q = require("q");
 
 /**
  * 构造函数
@@ -33,11 +34,15 @@ util.inherits(Script, Base);
 
 Script.prototype.execute = function(inputFile) {
     var self = this;
+    var deferred = Q.defer();
     // Step 1: 读取输入文件的内容
     var source = path.normalize(fs.realpathSync(inputFile.src));
     if (!fs.existsSync(source)) {
         self.logger.error("%s does not exist", source);
-        return;
+        process.nextTick(function() {
+            deferred.reject();
+        });
+        return deferred.promise;
     }
 
     var cmdParser = new CmdParser();
@@ -52,11 +57,17 @@ Script.prototype.execute = function(inputFile) {
         if (!ast) {
             self.logger.error("Parse %s failed", source);
             self.dumpFileBySource(inputFile);
-            return;
+            process.nextTick(function() {
+                deferred.reject();
+            });
+            return deferred.promise;
         }
         if (ast.error === true) {
             self.logger.error("Parse %s failed: %s,%s", source, ast.line, ast.col);
-            return;
+            process.nextTick(function() {
+                deferred.reject();
+            });
+            return deferred.promise;
         }
     }
 
@@ -77,7 +88,10 @@ Script.prototype.execute = function(inputFile) {
     if (!metaAst) {
         self.logger.warning("%s is not AMD format", source);
         self.dumpFileBySource(inputFile);
-        return;
+        process.nextTick(function() {
+            deferred.reject();
+        });
+        return deferred.promise;
     }
 
     // Step 3: 得到依赖的模块
@@ -148,10 +162,20 @@ Script.prototype.execute = function(inputFile) {
     var modified = cmdParser.modify(ast, modifyOptions);
 
     // Step 7: 输出文件
-    var code = modified.print_to_string();
+    var code = null;
+    try {
+        code = modified.print_to_string();
+    } catch(e) {
+        self.logger.error("modified.print_to_string error, dependencies is: %s",
+            JSON.stringify(modifyOptions.dependencies)
+        );
+    }
     code = self.beautify(code, "js");
     self.dumpFile(inputFile.dest, code);
-    return true;
+    process.nextTick(function() {
+        deferred.resolve();
+    });
+    return deferred.promise;
 };
 
 /**
@@ -304,11 +328,6 @@ Script.prototype.getRealName = function(dependency, base) {
             StringUtils.lstrip(self.toUnixPath(realName), {source: self.options.rootPath}),
             {source: "/"}
         ), {source: ".js"});
-//        if (_.isFunction(self.options.idRule)) {
-//            return self.options.idRule.call(self, id, realName);
-//        }
-//        else {
-//        }
     }
     else {
         return dependency;

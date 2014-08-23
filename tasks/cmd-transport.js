@@ -21,14 +21,16 @@ var Script = require("./plugins/script");
 var Style = require("./plugins/style");
 var Text = require("./plugins/text");
 var UnderscoreTemplate = require("./plugins/underscore-template");
-
-var Debug = require("./plugins/debug");
+var Handlebars = require("handlebars");
+var verboseTemplate = Handlebars.compile(
+    "transporting: {{{src}}} -> {{{dest}}}"
+);
 
 module.exports = function (grunt, done) {
     grunt.registerMultiTask('cmd_transport', 'transport cmd', function () {
         var self = this;
+        var async = self.async();
         var options = this.options({
-            debug: false,
             useCache: false,
             rootPath: process.cwd(),
             paths: [],
@@ -53,9 +55,6 @@ module.exports = function (grunt, done) {
                 ],
                 knownHelpersOnly: false
             },
-            debugOptions: {
-                postfix: "-debug"
-            },
             sassOptions: {},
             lessOptions: {},
             cssOptions: {}
@@ -65,20 +64,10 @@ module.exports = function (grunt, done) {
 
         var counter = 0;
         var statistics = {
-            transport: {
-            },
-            debug: {}
+            success: 0,
+            fail: 0
         };
-        _.each(options.parsers, function(value, key) {
-            statistics.transport[key] = {
-                success: 0,
-                fail: 0
-            };
-            statistics.debug[key] = {
-                success: 0,
-                fail: 0
-            };
-        });
+        var size = self.files.length;
 
         _.each(self.files, function(file) {
             var inputFile = {
@@ -93,12 +82,14 @@ module.exports = function (grunt, done) {
             }
             else {
                 grunt.log.error("Can not recognise src ...");
+                size -= 1;
                 return;
             }
             var extName = path.extname(inputFile.src);
             if (!_.has(options.parsers, extName)) {
                 grunt.log.warn("Can not find any parsers: " + inputFile.src);
                 grunt.file.copy(inputFile.src, inputFile.dest);
+                size -= 1;
                 return;
             }
 
@@ -111,36 +102,26 @@ module.exports = function (grunt, done) {
                 parser = new Parser(options);
                 parsers[extName] = parser;
             }
-            grunt.log.writeln("transporting: " + inputFile.src.toString().cyan);
-            if (parser.execute(inputFile) === true) {
-                statistics.transport[extName].success += 1;
-            }
-            else {
-                statistics.transport[extName].fail += 1;
-            }
-
-            if (options.debug) {
-                var debug = new Debug(options.debugOptions);
-
-                var result = debug.execute({
-                    src: inputFile.dest,
-                    dest: inputFile.dest.replace(
-                        new RegExp(extName === ".js" ? ".js$" : (extName + ".js$")),
-                        options.debugOptions.postfix + (extName === ".js" ? "" : extName) + ".js")
-                });
-                if (result) {
-                    statistics.debug[extName].success += 1;
+            grunt.log.writeln(verboseTemplate({
+                src: inputFile.src.toString().cyan,
+                dest: inputFile.dest.toString().cyan
+            }));
+            parser.execute(inputFile).then(function() {
+                statistics.success += 1;
+            }).fail(function() {
+                statistics.fail += 1;
+            }).finally(function() {
+                counter += 1;
+                size -= 1;
+                if (size <= 0) {
+                    async();
+                    grunt.log.writeln("transport " + counter.toString().cyan + " files");
+                    if (_.isFunction(done)) {
+                        done(statistics);
+                    }
                 }
-                else {
-                    statistics.debug[extName].fail += 1;
-                }
-            }
-
-            ++ counter;
+            });
         });
-        grunt.log.writeln("transport " + counter.toString().cyan + " files");
-        if (_.isFunction(done)) {
-            done(statistics);
-        }
+
     });
 };

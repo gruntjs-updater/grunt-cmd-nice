@@ -17,6 +17,7 @@ var CleanCSS = require("clean-css");
 var cleanCss = new CleanCSS({
     keepSpecialComments: 0
 });
+var Q = require("q");
 var through = require("through");
 
 var Base = require("./base");
@@ -45,38 +46,34 @@ util.inherits(LessStyle, Base);
 
 LessStyle.prototype.execute = function(inputFile) {
     var self = this;
+    var deferred = Q.defer();
     var source = path.normalize(fs.realpathSync(inputFile.src));
     if (!fs.existsSync(source)) {
         self.logger.error("%s does not exist", source);
-        return;
+        process.nextTick(function() {
+            deferred.reject();
+        });
+        return deferred.promise;
     }
 
-    var content = null;
-    // 模拟同步的方式来做less parser
-    // REF: http://stackoverflow.com/questions/19956265/synchronous-less-compiling-in-nodejs
-    var runner = through(function() {
-        content = fs.readFileSync(source, "utf-8");
-    }, function() {
-        // Step 2: 先分析得到文件的id
-        var id = StringUtils.lstrip(StringUtils.lstrip(self.toUnixPath(source),
-            {source: self.options.rootPath}), {source: "/"}
-        );
-        if (_.isFunction(self.options.idRule)) {
-            id = self.options.idRule.call(self, id, source);
+    var content = fs.readFileSync(source, "utf-8");
+    var id = StringUtils.lstrip(StringUtils.lstrip(self.toUnixPath(source),
+        {source: self.options.rootPath}), {source: "/"}
+    );
+    if (_.isFunction(self.options.idRule)) {
+        id = self.options.idRule.call(self, id);
+    }
+
+    // Step 3: 从Less中编译出CSS
+    self.lessParser.parse(content, function(e, result) {
+        if (e) {
+            self.logger.error("parse %s error: %s", source, e);
+            deferred.reject();
+            return;
         }
-
-        // Step 3: 从Less中编译出CSS
-        var compiled = null;
-        self.lessParser.parse(content, function(e, result) {
-            if (e) {
-                self.logger.error("parse %s error: %s", source, e);
-                return;
-            }
-            compiled = result.toCSS({
-                compress: false
-            });
+        var compiled = result.toCSS({
+            compress: false
         });
-
         // Step 4: 压缩得到的CSS
         compiled = self.cssConcat.concat(compiled, source);
         compiled = cleanCss.minify(compiled);
@@ -91,10 +88,9 @@ LessStyle.prototype.execute = function(inputFile) {
         });
         code = self.beautify(code, "js");
         self.dumpFile(inputFile.dest, code);
-        return this.queue(null);
+        deferred.resolve();
     });
-    runner.write();
-    runner.end();
-    return true;
+
+    return deferred.promise;
 };
 module.exports = LessStyle;
