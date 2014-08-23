@@ -8,14 +8,10 @@
 var fs = require('graceful-fs');
 var path = require("path");
 var util = require("util");
-
 var _ = require("underscore");
 var StringUtils = require("underscore.string");
-var Log = require("log");
-
 var Base = require("./base");
 var CmdParser = require("../utils/cmd-parser");
-var chalk = require('chalk');
 
 /**
  * 构造函数
@@ -38,14 +34,12 @@ util.inherits(Script, Base);
 Script.prototype.execute = function(inputFile) {
     var self = this;
     // Step 1: 读取输入文件的内容
-    var start = new Date().getTime();
     var source = path.normalize(fs.realpathSync(inputFile.src));
     if (!fs.existsSync(source)) {
         self.logger.error("%s does not exist", source);
         return;
     }
 
-    self.logger.debug("[Profile] Step 1: 读取输入文件的内容: " + (new Date().getTime() - start));
     var cmdParser = new CmdParser();
     var ast = null;
     if (self.options.useCache && _.has(self.astCache, source) && self.astCache[source].ast) {
@@ -54,7 +48,6 @@ Script.prototype.execute = function(inputFile) {
     else {
         var content = fs.readFileSync(source, "utf-8");
         // Step 2: 得到抽象语法树
-        start = new Date().getTime();
         ast = cmdParser.getAst(content);
         if (!ast) {
             self.logger.error("Parse %s failed", source);
@@ -86,10 +79,8 @@ Script.prototype.execute = function(inputFile) {
         self.dumpFileBySource(inputFile);
         return;
     }
-    self.logger.debug("[Profile] Step 2: 得到抽象语法树: " + (new Date().getTime() - start));
 
     // Step 3: 得到依赖的模块
-    start = new Date().getTime();
     var dependencies = metaAst.dependencies;
 
     // Step 4: 使用alias和aliasPaths来替换dependencies
@@ -97,23 +88,19 @@ Script.prototype.execute = function(inputFile) {
         dependencies[index] = self.replaceByAlias(dependencies[index]);
         dependencies[index] = self.replaceByPaths(dependencies[index]);
     });
-    self.logger.debug("[Profile] Step 4: 使用alias和aliasPaths来替换dependencies: " + (new Date().getTime() - start));
 
     // Step 5: 递归地查找依赖关系
-    start = new Date().getTime();
     var newDependencies = [];
     _.each(dependencies, function(dependency) {
         dependency = self.getRealName(dependency, path.normalize(path.join(source, "..")));
         dependency = StringUtils.rstrip(dependency, {source: ".js"});
         newDependencies.push(dependency);
         newDependencies = _.union(newDependencies,
-            self.findDependencies(dependency, path.normalize(path.join(source, "..")))
+            self.findDependencies(dependency, path.dirname(source))
         );
     });
-    self.logger.debug("[Profile] Step 5: 递归地查找依赖关系: " + (new Date().getTime() - start));
 
     // Step 6: 修改成CMD格式
-    start = new Date().getTime();
     var modifyOptions = {
         id: function() {
             return StringUtils.rstrip(StringUtils.lstrip(
@@ -121,21 +108,44 @@ Script.prototype.execute = function(inputFile) {
                 {source: "/"}
             ), {source: ".js"});
         },
-        dependencies: newDependencies,
+        dependencies: _.map(newDependencies, function(dependency) {
+            var isLocalDependency = false;
+            _.each(self.options.paths, function(pathname) {
+                if (fs.existsSync(path.join(pathname, dependency)) ||
+                    fs.existsSync(path.join(pathname, dependency) + ".js")) {
+                    isLocalDependency = true;
+                }
+            });
+            if (_.isFunction(self.options.idRule) && isLocalDependency) {
+                return self.options.idRule.call(self, dependency)
+            }
+            else {
+                return dependency;
+            }
+        }),
         require: function(name) {
             var newName = self.replaceByPaths(self.replaceByAlias(name));
             newName = self.getRealName(newName, path.normalize(path.join(source, "..")));
             newName = StringUtils.rstrip(newName, {source: ".js"});
-            return newName;
+            var isLocalDependency = false;
+            _.each(self.options.paths, function(pathname) {
+                if (fs.existsSync(path.join(pathname, newName)) ||
+                    fs.existsSync(path.join(pathname, newName) + ".js")) {
+                    isLocalDependency = true;
+                }
+            });
+            if (_.isFunction(self.options.idRule) && isLocalDependency) {
+                return self.options.idRule.call(self, newName)
+            }
+            else {
+                return newName;
+            }
         }
     };
     if (_.isFunction(self.options.idRule)) {
-        modifyOptions.id = function(id) {
-            return self.options.idRule.call(self, id, source);
-        };
+        modifyOptions.id = self.options.idRule.call(self, modifyOptions.id);
     }
     var modified = cmdParser.modify(ast, modifyOptions);
-    self.logger.debug("[Profile] Step 6: 修改成CMD格式: " + (new Date().getTime() - start));
 
     // Step 7: 输出文件
     var code = modified.print_to_string();
@@ -194,8 +204,6 @@ Script.prototype.replaceByPaths = function(name) {
 
 /**
  * 递归的找到依赖的依赖
- * @param dependency
- * @param basePath
  */
 Script.prototype.findDependencies = function(dependency, basePath) {
     var self = this;
@@ -267,13 +275,13 @@ Script.prototype.findDependencies = function(dependency, basePath) {
     });
     _.each(metaAst.dependencies, function(dependency) {
         dependency = StringUtils.rstrip(dependency, {source: ".js"});
-        dependency = self.getRealName(dependency, basePath);
+        dependency = self.getRealName(dependency, path.normalize(path.dirname(realFilePath)));
         if (!dependency) {
             return null;
         }
         dependencies.push(dependency);
         dependencies = _.union(dependencies,
-            self.findDependencies(dependency, path.normalize(path.join(realFilePath, "..")))
+            self.findDependencies(dependency, path.normalize(path.dirname(realFilePath)))
         );
     });
     if (self.options.useCache) {
@@ -292,15 +300,15 @@ Script.prototype.getRealName = function(dependency, base) {
         if (!fs.existsSync(realName)) {
             return null;
         }
-        if (_.isFunction(self.options.idRule)) {
-            return self.options.idRule.call(self, id, realName);
-        }
-        else {
-            return StringUtils.rstrip(StringUtils.lstrip(
-                StringUtils.lstrip(self.toUnixPath(realName), {source: self.options.rootPath}),
-                {source: "/"}
-            ), {source: ".js"})
-        }
+        return StringUtils.rstrip(StringUtils.lstrip(
+            StringUtils.lstrip(self.toUnixPath(realName), {source: self.options.rootPath}),
+            {source: "/"}
+        ), {source: ".js"});
+//        if (_.isFunction(self.options.idRule)) {
+//            return self.options.idRule.call(self, id, realName);
+//        }
+//        else {
+//        }
     }
     else {
         return dependency;

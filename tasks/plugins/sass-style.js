@@ -11,7 +11,6 @@ var util = require("util");
 
 var _ = require("underscore");
 var StringUtils = require("underscore.string");
-var Log = require("log");
 var Handlebars = require("handlebars");
 var CleanCSS = require("clean-css");
 var cleanCss = new CleanCSS({

@@ -14,6 +14,37 @@ var beautify = require('js-beautify');
 var shutils = require("shutils");
 var filesystem = shutils.filesystem;
 var chalk = require("chalk");
+var moment = require("moment");
+var Handlebars = require("handlebars");
+var fmt = require('util').format;
+
+var logMessageTemplate = Handlebars.compile(
+    "[{{{level}}} {{{now}}}] {{{message}}}\n"
+);
+Log.prototype.log = function(levelStr, args) {
+    var now = new moment().format("YYYY-MM-DD hh:mm:ss");
+    var color = function (levelStr, text) {
+        if (Log[levelStr] <= 3) {
+            return chalk.red(text);
+        }
+        else if (Log[levelStr] <= 4) {
+            return chalk.cyan(text);
+        }
+        else if (Log[levelStr] <= 6) {
+            return chalk.green(text);
+        }
+        return chalk.yellow(text);
+    };
+
+    if (Log[levelStr] <= this.level) {
+        var msg = fmt.apply(null, args);
+        this.stream.write(logMessageTemplate({
+            level: color(levelStr, levelStr),
+            now: color(levelStr, now),
+            message: color(levelStr, msg)
+        }));
+    }
+};
 
 var Base = function(options) {
     var self = this;
@@ -27,11 +58,6 @@ var Base = function(options) {
         self.options.rootPath = self.toUnixPath(self.options.rootPath);
     }
     self.logger = new Log(self.options.logLevel || "WARNING");
-    var errorLog = self.logger.error;
-    self.logger.error = function(message) {
-        var errorMessage = chalk.styles.red.open + message + chalk.styles.red.close;
-        errorLog.apply(this, _.union([errorMessage], _.toArray(arguments).slice(1)));
-    }
 };
 
 /**

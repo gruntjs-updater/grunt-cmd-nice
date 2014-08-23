@@ -8,12 +8,9 @@
 var fs = require('graceful-fs');
 var path = require("path");
 var util = require("util");
-
 var _ = require("underscore");
 var StringUtils = require("underscore.string");
-var Log = require("log");
 var Handlebars = require("handlebars");
-
 var Base = require("./base");
 
 var amdTemplate = Handlebars.compile([

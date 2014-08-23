@@ -26,16 +26,7 @@ var CmdParser = require("../utils/cmd-parser");
  */
 var Concat = function(options) {
     var self = this;
-    self.options = {
-        // 是否使用过滤功能
-        filters: false,
-        // 打包策略:
-        // 可以参考: http://docs.spmjs.org/doc/spm-build#include
-        // * relative: 相对路径，即只会打包本项目的
-        // * all: 把外部依赖也打包进来
-        // * self: 仅仅自己，也就意味着不打包其依赖的文件
-        include: "relative"
-    };
+    self.options = {};
     Base.call(self, options);
     // 保存id和内容的对应
     self.idCache = {};
@@ -98,7 +89,6 @@ Concat.prototype.execute = function(inputFile) {
     }
 
     // Step 3: 得到依赖的模块
-    var start = new Date().getTime();
     var dependencies = metaAst.dependencies;
     var contents = [];
     if (self.options.useCache && self.dependenciesCache.hasOwnProperty(source)) {
@@ -106,63 +96,38 @@ Concat.prototype.execute = function(inputFile) {
     }
     else {
         contents = [content];
-        if (self.options.include !== "self") {
-            _.each(dependencies, function(dependency) {
-                var content = null;
-                var extName = path.extname(dependency);
-                var isConcat = false;
-                if (_.isArray(self.options.filters) && _.contains(self.options.filters, extName)) {
-                    isConcat = true;
-                }
-                else if (_.isFunction(self.options.filters)) {
-                    isConcat = self.options.filters(dependency);
-                }
-                if (self.options.filters && !isConcat) {
-                    // 如果使用了filter，并且不做合并
-                    return;
-                }
-                if (self.options.include === "relative") {
-                    if (dependency.indexOf("../") === 0 || dependency.indexOf("./") === 0) {
-                         if (_.has(self.idCache, dependency)) {
-                            content = self.readContentFromCache(dependency);
-                        }
-                        else {
-                            content = self.readContentForRelativePath(dependency, path.dirname(source));
-                         }
-                    }
-                }
-                else {
-                    if (_.has(self.idCache, dependency)) {
-                        content = self.readContentFromCache(dependency);
-                    }
-                    else if (dependency.indexOf("../") === 0 || dependency.indexOf("./") === 0) {
-                        content = self.readContentForRelativePath(dependency, path.dirname(source));
-                    }
-                    else {
-                        content = self.readContentFromLocal(dependency);
-                    }
-                }
-
-                if (!content) {
-                    return;
-                }
-                contents.push(content);
-            });
-        }
+        _.each(dependencies, function(dependency) {
+            if (_.isFunction(self.options.idExtractor)) {
+                dependency = self.options.idExtractor(dependency);
+            }
+            var dependencyContent = null;
+            if (_.has(self.idCache, dependency)) {
+                dependencyContent = self.readContentFromCache(dependency);
+            }
+            else if (dependency.indexOf("../") === 0 || dependency.indexOf("./") === 0) {
+                dependencyContent = self.readContentForRelativePath(dependency,
+                    path.dirname(source)
+                );
+            }
+            else {
+                dependencyContent = self.readContentFromLocal(dependency);
+            }
+            if (!dependencyContent) {
+                return;
+            }
+            contents.push(dependencyContent);
+        });
         if (self.options.useCache) {
             self.dependenciesCache[source] = contents;
         }
         // fix 佛山发现的依赖库被合并了两次的bug 2014-07-16
         self.idCache[metaAst.id] = content;
     }
-    self.logger.debug("[Profile] Step 3: 得到依赖的模块: " + (new Date().getTime() - start));
-    start = new Date().getTime();
     contents = _.map(contents, function(content) {
         return StringUtils.rstrip(content, {source: ";"});
     });
     contents = contents.join((self.options.separator || ";") + "\n");
     contents = StringUtils.rstrip(contents, {source: ";"}) + (self.options.separator || ";");
-    self.logger.debug("[Profile] Step 4: 合并: " + (new Date().getTime() - start));
     self.dumpFile(inputFile.dest, contents);
     return true;
 };

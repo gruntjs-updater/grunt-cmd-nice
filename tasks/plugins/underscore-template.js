@@ -11,9 +11,7 @@ var util = require("util");
 
 var _ = require("underscore");
 var StringUtils = require("underscore.string");
-var Log = require("log");
 var Handlebars = require("handlebars");
-
 var Base = require("./base");
 var amdTemplate = Handlebars.compile([
     'define("{{{id}}}", [], function(require, exports, module) {',
