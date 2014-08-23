@@ -5,7 +5,7 @@
  * 对transport后的文件进行合并
  */
 
-var fs = require("fs");
+var fs = require('graceful-fs');
 var path = require("path");
 var util = require("util");
 

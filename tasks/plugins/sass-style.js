@@ -5,7 +5,7 @@
  * 将*.scss文件转换成css文件，并且进行一个transport
  */
 
-var fs = require("fs");
+var fs = require('graceful-fs');
 var path = require("path");
 var util = require("util");
 

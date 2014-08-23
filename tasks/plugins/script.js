@@ -5,7 +5,7 @@
  * 转换Javascript脚本文件
  */
 
-var fs = require("fs");
+var fs = require('graceful-fs');
 var path = require("path");
 var util = require("util");
 

@@ -5,7 +5,7 @@
  * 将less文件转换成css内容，并且transport
  */
 
-var fs = require("fs");
+var fs = require('graceful-fs');
 var path = require("path");
 var util = require("util");
 

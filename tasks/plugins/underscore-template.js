@@ -5,7 +5,7 @@
  * 将underscore的模板转换为js代码，并且是AMD格式的
  */
 
-var fs = require("fs");
+var fs = require('graceful-fs');
 var path = require("path");
 var util = require("util");
 
