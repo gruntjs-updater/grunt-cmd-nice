@@ -16,6 +16,7 @@ var CleanCSS = require("clean-css");
 var cleanCss = new CleanCSS({
     keepSpecialComments: 0
 });
+var cssom = require("cssom");
 
 var Base = require("./base");
 var CssConcat = require("../utils/css-concat");

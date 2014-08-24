@@ -11,7 +11,7 @@ var StringUtils = require("underscore.string");
 var Handlebars = require("handlebars");
 var idNameTemplate = Handlebars.compile("{{{family}}}/{{{name}}}/{{{version}}}/{{{id}}}");
 
-var Script = require("../plugins/script");
+var Style = require("../plugins/style");
 
 var config = {
     debug: false,
@@ -53,39 +53,11 @@ var config = {
         knownHelpers: [
             "if", "unless", "each"
         ]
-    },
-    idRule: function(id) {
-        return idNameTemplate({
-            family: "alinw",
-            name: "bpms",
-            version: "0.0.1",
-            id: id
-        })
     }
 };
 
-var script = new Script(config);
-script.execute({
-    src: "/Users/wul/zone/evaluation/src/p/people_receive_evaluate/index.js",
-    dest: "/Users/wul/Downloads/index.js"
-});
-
-var Concat = require("../plugins/concat");
-var concat = new Concat({
-    paths: [
-        "/Users/wul/zone/evaluation/dist"
-    ],
-    idExtractor: function(id) {
-        var pattern = new RegExp("^alinw/bpms/0.0.1/(.*?)$");
-        if (pattern.test(id)) {
-            return pattern.exec(id)[1];
-        }
-        else {
-            return id;
-        }
-    }
-});
-concat.execute({
-    src: "/Users/wul/Downloads/index.js",
-    dest: "/Users/wul/Downloads/index-min.js"
+var style = new Style(config);
+style.execute({
+    src: "/Users/wul/zone/evaluation/src/p/people_send_invite/index.css",
+    dest: "/Users/wul/Downloads/index.css.js"
 });

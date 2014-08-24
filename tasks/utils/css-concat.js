@@ -36,15 +36,21 @@ CssConcat.prototype.concat = function(source, file) {
 CssConcat.prototype.parseImports = function(rules, file) {
     var self = this;
     var results = [];
+    var urlPattern = /url\([\'|\"](.*?)[\'|\"]\)/;
     _.each(rules, function(rule) {
         if (rule.type !== "import") {
             results.push(rule);
             return;
         }
-        var url = rule.import;
-        url = StringUtils.strip(url, {source: '"'});
-        url = StringUtils.strip(url, {source: "'"});
-        url = StringUtils.strip(url, {source: '"'});
+        if (!urlPattern.test(rule.import)) {
+            results.push(rule);
+            return;
+        }
+        var url = urlPattern.exec(rule.import)[1];
+        if (url.indexOf("//") === 0) {
+            results.push(rule);
+            return;
+        }
         var newFile = null;
         if (url.indexOf("../") === 0 || url.indexOf("./") === 0) {
             newFile = self.findFileBySelf(url, file);
@@ -74,7 +80,7 @@ CssConcat.prototype.parseImports = function(rules, file) {
 CssConcat.prototype.findFileBySelf = function(url, file) {
     var dirName = path.dirname(file);
     var newFile = path.join(dirName, url);
-    if (!fs.existsSync(newFile)) {
+    if (fs.existsSync(newFile)) {
         return newFile;
     }
     return null;
