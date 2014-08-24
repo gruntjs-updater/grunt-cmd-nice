@@ -270,7 +270,9 @@ CmdParser.prototype.parseDependencies = function(factory) {
             var args = node.expression.args || node.args;
             if (_.isArray(args) && args.length === 1) {
                 var item = args[0];
-                if (item instanceof UglifyJS.AST_String) {
+                // 2014-08-24 garcia.wul 忽略seajs.config中的vars变量
+                if ((item instanceof UglifyJS.AST_String) &&
+                    !/\{.*?\}/.test(item.getValue())) {
                     dependencies.push(item.getValue());
                 }
             }
