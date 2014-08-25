@@ -6,14 +6,14 @@
  */
 
 module.exports = {
-    concat: require("./tasks/plugins/concat"),
-    debug: require("./tasks/plugins/debug"),
-    handlebarsTemplate: require("./tasks/plugins/handlebars-template"),
-    json: require("./tasks/plugins/json"),
-    lessStyle: require("./tasks/plugins/less-style"),
-    sassStyle: require("./tasks/plugins/sass-style"),
-    script: require("./tasks/plugins/script"),
-    style: require("./tasks/plugins/style"),
-    text: require("./tasks/plugins/text"),
-    underscoreTemplate: require("./tasks/plugins/underscore-template")
+    Concat: require("./tasks/plugins/concat"),
+    Debug: require("./tasks/plugins/debug"),
+    JandlebarsTemplate: require("./tasks/plugins/handlebars-template"),
+    Json: require("./tasks/plugins/json"),
+    LessStyle: require("./tasks/plugins/less-style"),
+    SassStyle: require("./tasks/plugins/sass-style"),
+    Script: require("./tasks/plugins/script"),
+    Style: require("./tasks/plugins/style"),
+    Text: require("./tasks/plugins/text"),
+    UnderscoreTemplate: require("./tasks/plugins/underscore-template")
 };
