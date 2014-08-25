@@ -36,14 +36,8 @@ Script.prototype.execute = function(inputFile) {
     var self = this;
     var deferred = Q.defer();
     // Step 1: 读取输入文件的内容
-    var source = path.normalize(fs.realpathSync(inputFile.src));
-    if (!fs.existsSync(source)) {
-        self.logger.error("%s does not exist", source);
-        process.nextTick(function() {
-            deferred.reject();
-        });
-        return deferred.promise;
-    }
+    var content = inputFile.content;
+    var source = inputFile.src;
 
     var cmdParser = new CmdParser();
     var ast = null;
@@ -51,12 +45,11 @@ Script.prototype.execute = function(inputFile) {
         ast = self.astCache[source].ast;
     }
     else {
-        var content = fs.readFileSync(source, "utf-8");
         // Step 2: 得到抽象语法树
         ast = cmdParser.getAst(content);
         if (!ast) {
             self.logger.error("Parse %s failed", source);
-            self.dumpFileBySource(inputFile);
+//            self.dumpFileBySource(inputFile);
             process.nextTick(function() {
                 deferred.reject();
             });
@@ -87,7 +80,7 @@ Script.prototype.execute = function(inputFile) {
 
     if (!metaAst) {
         self.logger.warning("%s is not AMD format", source);
-        self.dumpFileBySource(inputFile);
+//        self.dumpFileBySource(inputFile);
         process.nextTick(function() {
             deferred.reject();
         });
@@ -171,9 +164,9 @@ Script.prototype.execute = function(inputFile) {
         );
     }
     code = self.beautify(code, "js");
-    self.dumpFile(inputFile.dest, code);
+//    self.dumpFile(inputFile.dest, code);
     process.nextTick(function() {
-        deferred.resolve();
+        deferred.resolve(code);
     });
     return deferred.promise;
 };

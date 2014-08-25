@@ -29,17 +29,9 @@ util.inherits(Text, Base);
 Text.prototype.execute = function(inputFile) {
     var self = this;
     var deferred = Q.defer();
-    var source = path.normalize(fs.realpathSync(inputFile.src));
-    if (!fs.existsSync(source)) {
-        self.logger.error("%s does not exist", source);
-        process.nextTick(function() {
-            deferred.reject();
-        });
-        return deferred.promise;
-    }
+    var content = inputFile.content;
+    var source = inputFile.src;
 
-    // Step 1: 读取文件
-    var content = fs.readFileSync(source, "utf-8");
     content = content.split(/\r\n|\r|\n/).map(function(line) {
         return line.replace(/\\/g, '\\\\');
     }).join('\\\n').replace(/\'/g, '\\\'');
@@ -59,9 +51,9 @@ Text.prototype.execute = function(inputFile) {
     });
 
     code = self.beautify(code, "js");
-    self.dumpFile(inputFile.dest, code);
+//    self.dumpFile(inputFile.dest, code);
     process.nextTick(function() {
-        deferred.resolve();
+        deferred.resolve(code);
     });
     return deferred.promise;
 };

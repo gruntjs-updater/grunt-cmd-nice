@@ -31,15 +31,8 @@ UnderscoreTemplate.prototype.execute = function(inputFile) {
     var self = this;
     var deferred = Q.defer();
     // Step 1: 读取输入文件的内容
-    var source = path.normalize(fs.realpathSync(inputFile.src));
-    if (!fs.existsSync(source)) {
-        self.logger.error("%s does not exist", source);
-        process.nextTick(function() {
-            deferred.reject();
-        });
-        return deferred.promise;
-    }
-    var content = fs.readFileSync(source, "utf-8");
+    var content = inputFile.content;
+    var source = inputFile.src;
 
     // Step 2: 先分析得到文件的id
     var id = StringUtils.lstrip(StringUtils.lstrip(self.toUnixPath(source),
@@ -59,9 +52,9 @@ UnderscoreTemplate.prototype.execute = function(inputFile) {
         code: complied.source
     });
     code = self.beautify(code, "js");
-    self.dumpFile(inputFile.dest, code);
+//    self.dumpFile(inputFile.dest, code);
     process.nextTick(function() {
-        deferred.resolve();
+        deferred.resolve(code);
     });
     return deferred.promise;
 };

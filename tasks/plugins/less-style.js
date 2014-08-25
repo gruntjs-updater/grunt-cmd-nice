@@ -46,16 +46,9 @@ util.inherits(LessStyle, Base);
 LessStyle.prototype.execute = function(inputFile) {
     var self = this;
     var deferred = Q.defer();
-    var source = path.normalize(fs.realpathSync(inputFile.src));
-    if (!fs.existsSync(source)) {
-        self.logger.error("%s does not exist", source);
-        process.nextTick(function() {
-            deferred.reject();
-        });
-        return deferred.promise;
-    }
+    var content = inputFile.content;
+    var source = inputFile.src;
 
-    var content = fs.readFileSync(source, "utf-8");
     var id = StringUtils.lstrip(StringUtils.lstrip(self.toUnixPath(source),
         {source: self.options.rootPath}), {source: "/"}
     );
@@ -86,8 +79,8 @@ LessStyle.prototype.execute = function(inputFile) {
             code: compiled
         });
         code = self.beautify(code, "js");
-        self.dumpFile(inputFile.dest, code);
-        deferred.resolve();
+//        self.dumpFile(inputFile.dest, code);
+        deferred.resolve(code);
     });
 
     return deferred.promise;

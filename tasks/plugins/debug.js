@@ -36,15 +36,8 @@ Debug.prototype.execute = function(inputFile) {
     var self = this;
     var deferred = Q.defer();
     // Step 1: 读取输入文件的内容
-    var source = path.normalize(fs.realpathSync(inputFile.src));
-    if (!fs.existsSync(source)) {
-        self.logger.error("%s does not exist", source);
-        process.nextTick(function() {
-            deferred.reject();
-        });
-        return deferred.promise;
-    }
-    var content = fs.readFileSync(source, "utf-8");
+    var content = inputFile.content;
+    var source = inputFile.src;
 
     // Step 2: 得到抽象语法树
     var cmdParser = new CmdParser();
@@ -107,9 +100,9 @@ Debug.prototype.execute = function(inputFile) {
     });
     var code = modified.print_to_string();
     code = self.beautify(code, "js");
-    self.dumpFile(inputFile.dest, code);
+//    self.dumpFile(inputFile.dest, code);
     process.nextTick(function() {
-        deferred.resolve();
+        deferred.resolve(code);
     });
     return deferred.promise;
 };

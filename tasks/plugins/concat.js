@@ -39,16 +39,8 @@ util.inherits(Concat, Base);
 Concat.prototype.execute = function(inputFile) {
     var self = this;
     var deferred = Q.defer();
-    // Step 1: 读取输入文件的内容
-    var source = path.normalize(fs.realpathSync(inputFile.src));
-    if (!fs.existsSync(source)) {
-        self.logger.error("%s does not exist", source);
-        process.nextTick(function() {
-            deferred.reject();
-        });
-        return deferred.promise;
-    }
-    var content = fs.readFileSync(source, "utf-8");
+    var content = inputFile.content;
+    var source = inputFile.src;
 
     // Step 2: 得到抽象语法树
     var cmdParser = new CmdParser();
@@ -63,7 +55,7 @@ Concat.prototype.execute = function(inputFile) {
         ast = cmdParser.getAst(content);
         if (!ast) {
             self.logger.error("Parse %s failed", source);
-            self.dumpFileBySource(inputFile);
+//            self.dumpFileBySource(inputFile);
             process.nextTick(function() {
                 deferred.reject();
             });
@@ -95,7 +87,7 @@ Concat.prototype.execute = function(inputFile) {
 
     if (!metaAst) {
         self.logger.warning("%s is not AMD format", source);
-        self.dumpFileBySource(inputFile);
+//        self.dumpFileBySource(inputFile);
         process.nextTick(function() {
             deferred.reject();
         });
@@ -142,9 +134,9 @@ Concat.prototype.execute = function(inputFile) {
     });
     contents = contents.join((self.options.separator || ";") + "\n");
     contents = StringUtils.rstrip(contents, {source: ";"}) + (self.options.separator || ";");
-    self.dumpFile(inputFile.dest, contents);
+//    self.dumpFile(inputFile.dest, contents);
     process.nextTick(function() {
-        deferred.resolve();
+        deferred.resolve(contents);
     });
     return deferred.promise;
 };

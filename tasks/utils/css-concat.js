@@ -37,16 +37,23 @@ CssConcat.prototype.parseImports = function(rules, file) {
     var self = this;
     var results = [];
     var urlPattern = /url\([\'|\"](.*?)[\'|\"]\)/;
+    var urlPattern2 = /url\((.*?)\)/;
     _.each(rules, function(rule) {
         if (rule.type !== "import") {
             results.push(rule);
             return;
         }
-        if (!urlPattern.test(rule.import)) {
+        if (!urlPattern.test(rule.import) && !urlPattern2.test(rule.import)) {
             results.push(rule);
             return;
         }
-        var url = urlPattern.exec(rule.import)[1];
+        var url = null;
+        if (urlPattern.test(rule.import)) {
+            url = urlPattern.exec(rule.import)[1];
+        }
+        else if (urlPattern2.test(rule.import)) {
+            url = urlPattern2.exec(rule.import)[1]
+        }
         if (url.indexOf("//") === 0) {
             results.push(rule);
             return;

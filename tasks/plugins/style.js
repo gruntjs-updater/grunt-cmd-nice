@@ -44,15 +44,8 @@ Style.prototype.execute = function(inputFile) {
     var self = this;
     var deferred = Q.defer();
     // Step 1: 读取输入文件的内容
-    var source = path.normalize(fs.realpathSync(inputFile.src));
-    if (!fs.existsSync(source)) {
-        self.logger.error("%s does not exist", source);
-        process.nextTick(function() {
-            deferred.reject();
-        });
-        return deferred.promise;
-    }
-    var content = fs.readFileSync(source, "utf-8");
+    var content = inputFile.content;
+    var source = inputFile.src;
 
     // Step 2: 压缩CSS文件
     content = self.cssConcat.concat(content, source);
@@ -75,9 +68,9 @@ Style.prototype.execute = function(inputFile) {
         code: content
     });
     code = self.beautify(code, "js");
-    self.dumpFile(inputFile.dest, code);
+//    self.dumpFile(inputFile.dest, code);
     process.nextTick(function() {
-        deferred.resolve();
+        deferred.resolve(code);
     });
     return deferred.promise;
 };
