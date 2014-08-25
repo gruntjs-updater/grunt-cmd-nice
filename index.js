@@ -8,7 +8,7 @@
 module.exports = {
     Concat: require("./tasks/plugins/concat"),
     Debug: require("./tasks/plugins/debug"),
-    JandlebarsTemplate: require("./tasks/plugins/handlebars-template"),
+    HandlebarsTemplate: require("./tasks/plugins/handlebars-template"),
     Json: require("./tasks/plugins/json"),
     LessStyle: require("./tasks/plugins/less-style"),
     SassStyle: require("./tasks/plugins/sass-style"),
