@@ -130,8 +130,16 @@ module.exports = function (grunt, done) {
             parser.execute(inputFile).then(function(code) {
                 statistics.success += 1;
                 dumpFile(inputFile.dest, code);
-            }).fail(function() {
+            }).fail(function(error) {
                 statistics.fail += 1;
+                if (_.isObject(error) && _.isString(error.message)) {
+                    if (_.isString(error.level)) {
+                        grunt.log[error.level](error.message);
+                    }
+                    else {
+                        grunt.log.error(error.message);
+                    }
+                }
                 dumpFile(inputFile.dest, inputFile.content);
             }).finally(function() {
                 counter += 1;

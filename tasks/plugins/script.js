@@ -13,6 +13,7 @@ var StringUtils = require("underscore.string");
 var Base = require("./base");
 var CmdParser = require("../utils/cmd-parser");
 var Q = require("q");
+var Handlebars = require("handlebars");
 
 /**
  * 构造函数
@@ -48,17 +49,26 @@ Script.prototype.execute = function(inputFile) {
         // Step 2: 得到抽象语法树
         ast = cmdParser.getAst(content);
         if (!ast) {
-            self.logger.error("Parse %s failed", source);
-//            self.dumpFileBySource(inputFile);
             process.nextTick(function() {
-                deferred.reject();
+                deferred.reject({
+                    message: Handlebars.compile("parse {{{source}}} failed")({
+                        source: source
+                    }),
+                    level: "error"
+                });
             });
             return deferred.promise;
         }
         if (ast.error === true) {
-            self.logger.error("Parse %s failed: %s,%s", source, ast.line, ast.col);
             process.nextTick(function() {
-                deferred.reject();
+                deferred.reject({
+                    message: Handlebars.compile("parse {{{source}}} ast failed: {{{line}}},{{{col}}}")({
+                        source: source,
+                        line: ast.line,
+                        col: ast.col
+                    }),
+                    level: "error"
+                });
             });
             return deferred.promise;
         }
@@ -79,10 +89,13 @@ Script.prototype.execute = function(inputFile) {
     }
 
     if (!metaAst) {
-        self.logger.warning("%s is not AMD format", source);
-//        self.dumpFileBySource(inputFile);
         process.nextTick(function() {
-            deferred.reject();
+            deferred.reject({
+                level: "warn",
+                message: Handlebars.compile("{{{source}}} is not CMD format")({
+                    source: source
+                })
+            });
         });
         return deferred.promise;
     }

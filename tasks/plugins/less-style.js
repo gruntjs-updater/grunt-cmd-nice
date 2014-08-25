@@ -59,8 +59,13 @@ LessStyle.prototype.execute = function(inputFile) {
     // Step 3: 从Less中编译出CSS
     self.lessParser.parse(content, function(e, result) {
         if (e) {
-            self.logger.error("parse %s error: %s", source, e);
-            deferred.reject();
+            deferred.reject({
+                level: "error",
+                message: Handlebars.compile("parse {{{source}}} error: {{{message}}}")({
+                    source: source,
+                    message: e.toSource()
+                })
+            });
             return;
         }
         var compiled = result.toCSS({
@@ -79,7 +84,6 @@ LessStyle.prototype.execute = function(inputFile) {
             code: compiled
         });
         code = self.beautify(code, "js");
-//        self.dumpFile(inputFile.dest, code);
         deferred.resolve(code);
     });
 

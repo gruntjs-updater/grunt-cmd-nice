@@ -54,17 +54,26 @@ Concat.prototype.execute = function(inputFile) {
     else {
         ast = cmdParser.getAst(content);
         if (!ast) {
-            self.logger.error("Parse %s failed", source);
-//            self.dumpFileBySource(inputFile);
             process.nextTick(function() {
-                deferred.reject();
+                deferred.reject({
+                    message: Handlebars.compile("parse {{{source}}} failed")({
+                        source: source
+                    }),
+                    level: "error"
+                });
             });
             return deferred.promise;
         }
         if (ast.error === true) {
-            self.logger.error("Parse %s failed: %s,%s", source, ast.line, ast.col);
             process.nextTick(function() {
-                deferred.reject();
+                deferred.reject({
+                    message: Handlebars.compile("parse {{{source}}} ast failed: {{{line}}},{{{col}}}")({
+                        source: source,
+                        line: ast.line,
+                        col: ast.col
+                    }),
+                    level: "error"
+                });
             });
             return deferred.promise;
         }
@@ -86,10 +95,13 @@ Concat.prototype.execute = function(inputFile) {
     }
 
     if (!metaAst) {
-        self.logger.warning("%s is not AMD format", source);
-//        self.dumpFileBySource(inputFile);
         process.nextTick(function() {
-            deferred.reject();
+            deferred.reject({
+                level: "warn",
+                message: Handlebars.compile("{{{source}}} is not CMD format")({
+                    source: source
+                })
+            });
         });
         return deferred.promise;
     }
@@ -168,7 +180,7 @@ Concat.prototype.readContentForRelativePath = function(id, dirName) {
     }
     var metaAst = cmdParser.parseFirst(ast);
     if (!metaAst) {
-        self.logger.warning("%s is not AMD format", newPath);
+        self.logger.warning("%s is not CMD format", newPath);
         return null;
     }
     self.idCache[metaAst.id] = content;
@@ -221,7 +233,7 @@ Concat.prototype.readContentFromLocal = function(id) {
     }
 
     if (!metaAst) {
-        self.logger.warning("%s is not AMD format", file);
+        self.logger.warning("%s is not CMD format", file);
         return null;
     }
 

@@ -43,25 +43,39 @@ Debug.prototype.execute = function(inputFile) {
     var cmdParser = new CmdParser();
     var ast = cmdParser.getAst(content);
     if (!ast) {
-        self.logger.error("Parse %s failed", source);
         process.nextTick(function() {
-            deferred.reject();
+            deferred.reject({
+                message: Handlebars.compile("parse {{{source}}} failed")({
+                    source: source
+                }),
+                level: "error"
+            });
         });
         return deferred.promise;
     }
     if (ast.error === true) {
-        self.logger.error("Parse %s failed: %s,%s", source, ast.line, ast.col);
         process.nextTick(function() {
-            deferred.reject();
+            deferred.reject({
+                message: Handlebars.compile("parse {{{source}}} ast failed: {{{line}}},{{{col}}}")({
+                    source: source,
+                    line: ast.line,
+                    col: ast.col
+                }),
+                level: "error"
+            });
         });
         return deferred.promise;
     }
 
     var metaAst = cmdParser.parseFirst(ast);
     if (!metaAst) {
-        self.logger.warning("%s is not AMD format", source);
         process.nextTick(function() {
-            deferred.reject();
+            deferred.reject({
+                level: "warn",
+                message: Handlebars.compile("{{{source}}} is not CMD format")({
+                    source: source
+                })
+            });
         });
         return deferred.promise;
     }
