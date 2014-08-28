@@ -516,6 +516,15 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 
 ## Release History
 
+### 0.2.1
+* 使用[cssjoin](https://github.com/suisho/cssjoin)来做transport中的CSS合并
+
+### 0.2.0
+* 修复依赖相对路径的handlebars文件时没有合并进去的bug
+* 将debug单独做成一个任务
+* 所有插件改成`promise`
+* 修复transport时CSS中含有@import时没有展开的bug
+
 ### 0.1.1
 * 合并时的seperator优化
 * 增加统计的回掉功能

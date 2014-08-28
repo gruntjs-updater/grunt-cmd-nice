@@ -13,6 +13,8 @@ var StringUtils = require("underscore.string");
 var cssParse = require('css-parse');
 var stringify = require('css-stringify');
 var isUrl = require("is-url");
+var cssjoin = require('cssjoin');
+var Q = require("q");
 
 var CssConcat = function(options) {
     var self = this;
@@ -26,12 +28,34 @@ var CssConcat = function(options) {
 
 CssConcat.prototype.concat = function(source, file) {
     var self = this;
-    var parsed = cssParse(source);
-    if (_.isObject(parsed) && _.isObject(parsed.stylesheet) &&
-        _.isArray(parsed.stylesheet.rules)) {
-        parsed.stylesheet.rules = self.parseImports(parsed.stylesheet.rules, file);
-    }
-    return stringify(parsed);
+    // 2014-08-28 garcia.wul 使用(cssjoin)[https://github.com/suisho/cssjoin]来做合并
+    var deferred = Q.defer();
+    self.joinCss(file).then(function(extendedCss) {
+        deferred.resolve(extendedCss);
+    }).fail(function(error) {
+        var parsed = cssParse(source);
+        if (_.isObject(parsed) && _.isObject(parsed.stylesheet) &&
+            _.isArray(parsed.stylesheet.rules)) {
+            parsed.stylesheet.rules = self.parseImports(parsed.stylesheet.rules, file);
+        }
+        deferred.resolve(stringify(parsed));
+    });
+    return deferred.promise;
+};
+
+CssConcat.prototype.joinCss = function(file) {
+    var self = this;
+    var deferred = Q.defer();
+    cssjoin(file, function(error, extendedCss) {
+        if (error) {
+            deferred.reject(error);
+        }
+        else {
+            deferred.resolve(extendedCss);
+        }
+    });
+
+    return deferred.promise;
 };
 
 CssConcat.prototype.parseImports = function(rules, file) {

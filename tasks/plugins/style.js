@@ -47,28 +47,27 @@ Style.prototype.execute = function(inputFile) {
     var source = inputFile.src;
 
     // Step 2: 压缩CSS文件
-    content = self.cssConcat.concat(content, source);
-    content = cleanCss.minify(content);
-    content = _.map(content.split(/\r\n|\r|\n/), function(line) {
-        return line.replace(/\\/g, '\\\\');
-    }).join("\n").replace(/\'/g, '\\\'');
+    self.cssConcat.concat(content, source).then(function(extendedCss) {
+        content = extendedCss;
+        content = cleanCss.minify(content);
+        content = _.map(content.split(/\r\n|\r|\n/), function(line) {
+            return line.replace(/\\/g, '\\\\');
+        }).join("\n").replace(/\'/g, '\\\'');
 
-    // Step 3: 先分析得到文件的id
-    var id = StringUtils.lstrip(StringUtils.lstrip(self.toUnixPath(source),
-        {source: self.options.rootPath}), {source: "/"}
-    );
-    if (_.isFunction(self.options.idRule)) {
-        id = self.options.idRule.call(self, id);
-    }
+        // Step 3: 先分析得到文件的id
+        var id = StringUtils.lstrip(StringUtils.lstrip(self.toUnixPath(source),
+            {source: self.options.rootPath}), {source: "/"}
+        );
+        if (_.isFunction(self.options.idRule)) {
+            id = self.options.idRule.call(self, id);
+        }
 
-    // Step 4: 得到AMD格式的代码
-    var code = amdTemplate({
-        id: id,
-        code: content
-    });
-    code = self.beautify(code, "js");
-//    self.dumpFile(inputFile.dest, code);
-    process.nextTick(function() {
+        // Step 4: 得到AMD格式的代码
+        var code = amdTemplate({
+            id: id,
+            code: content
+        });
+        code = self.beautify(code, "js");
         deferred.resolve(code);
     });
     return deferred.promise;

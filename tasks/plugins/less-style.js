@@ -72,19 +72,21 @@ LessStyle.prototype.execute = function(inputFile) {
             compress: false
         });
         // Step 4: 压缩得到的CSS
-        compiled = self.cssConcat.concat(compiled, source);
-        compiled = cleanCss.minify(compiled);
-        compiled = _.map(compiled.split(/\r\n|\r|\n/), function(line) {
-            return line.replace(/\\/g, '\\\\');
-        }).join("\n").replace(/\'/g, '\\\'');
+        self.cssConcat.concat(compiled, source).then(function(extendedCss) {
+            compiled = extendedCss;
+            compiled = cleanCss.minify(compiled);
+            compiled = _.map(compiled.split(/\r\n|\r|\n/), function(line) {
+                return line.replace(/\\/g, '\\\\');
+            }).join("\n").replace(/\'/g, '\\\'');
 
-        // Step 5: 得到AMD格式的代码
-        var code = amdTemplate({
-            id: id,
-            code: compiled
+            // Step 5: 得到AMD格式的代码
+            var code = amdTemplate({
+                id: id,
+                code: compiled
+            });
+            code = self.beautify(code, "js");
+            deferred.resolve(code);
         });
-        code = self.beautify(code, "js");
-        deferred.resolve(code);
     });
 
     return deferred.promise;
