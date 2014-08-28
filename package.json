@@ -1,7 +1,7 @@
 {
   "name": "grunt-cmd-nice",
   "description": "another transport javascript into cmd",
-  "version": "0.2.0-beta8",
+  "version": "0.2.0",
   "homepage": "https://github.com/magicsky/grunt-cmd-nice",
   "author": {
     "name": "garcia.wul",
