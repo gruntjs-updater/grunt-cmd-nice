@@ -12,6 +12,7 @@ var _ = require("underscore");
 var StringUtils = require("underscore.string");
 var cssParse = require('css-parse');
 var stringify = require('css-stringify');
+var isUrl = require("is-url");
 
 var CssConcat = function(options) {
     var self = this;
@@ -39,11 +40,8 @@ CssConcat.prototype.parseImports = function(rules, file) {
     var urlPattern = /url\([\'|\"](.*?)[\'|\"]\)/;
     var urlPattern2 = /url\((.*?)\)/;
     _.each(rules, function(rule) {
-        if (rule.type !== "import") {
-            results.push(rule);
-            return;
-        }
-        if (!urlPattern.test(rule.import) && !urlPattern2.test(rule.import)) {
+        if (rule.type !== "import" || isUrl(rule.import) ||
+            rule.import.indexOf("//") === 0) {
             results.push(rule);
             return;
         }
@@ -54,10 +52,13 @@ CssConcat.prototype.parseImports = function(rules, file) {
         else if (urlPattern2.test(rule.import)) {
             url = urlPattern2.exec(rule.import)[1]
         }
-        if (url.indexOf("//") === 0) {
-            results.push(rule);
-            return;
+        else {
+            url = rule.import;
         }
+        url = StringUtils.strip(url);
+        url = StringUtils.strip(url, {source: '"'});
+        url = StringUtils.strip(url, {source: "'"});
+        url = StringUtils.strip(url, {source: '"'});
         var newFile = null;
         if (url.indexOf("../") === 0 || url.indexOf("./") === 0) {
             newFile = self.findFileBySelf(url, file);
