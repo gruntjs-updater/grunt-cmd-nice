@@ -177,7 +177,6 @@ Script.prototype.execute = function(inputFile) {
         );
     }
     code = self.beautify(code, "js");
-//    self.dumpFile(inputFile.dest, code);
     process.nextTick(function() {
         deferred.resolve(code);
     });

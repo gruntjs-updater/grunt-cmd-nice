@@ -15,5 +15,7 @@ module.exports = {
     Script: require("./tasks/plugins/script"),
     Style: require("./tasks/plugins/style"),
     Text: require("./tasks/plugins/text"),
-    UnderscoreTemplate: require("./tasks/plugins/underscore-template")
+    UnderscoreTemplate: require("./tasks/plugins/underscore-template"),
+    // 2014-08-30 garcia.wul 新增分析单个JS文件的接口
+    DependencyUtils: require("./tasks/utils/dependency-utils")
 };
