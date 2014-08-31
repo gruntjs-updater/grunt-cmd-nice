@@ -146,7 +146,6 @@ Concat.prototype.execute = function(inputFile) {
     });
     contents = contents.join((self.options.separator || ";") + "\n");
     contents = StringUtils.rstrip(contents, {source: ";"}) + (self.options.separator || ";");
-//    self.dumpFile(inputFile.dest, contents);
     process.nextTick(function() {
         deferred.resolve(contents);
     });
@@ -170,18 +169,12 @@ Concat.prototype.readContentForRelativePath = function(id, dirName) {
     var content = fs.readFileSync(newPath, "utf-8");
     var cmdParser = new CmdParser();
     var ast = cmdParser.getAst(content);
-    if (!ast) {
-        self.logger.error("Parse %s failed", newPath);
-        return null;
-    }
-    if (ast.error === true) {
-        self.logger.error("Parse %s failed: %s,%s", newPath, ast.line, ast.col);
-        return null;
+    if (!ast || ast.error) {
+        return content;
     }
     var metaAst = cmdParser.parseFirst(ast);
     if (!metaAst) {
-        self.logger.warning("%s is not CMD format", newPath);
-        return null;
+        return content;
     }
     self.idCache[metaAst.id] = content;
     return content;
@@ -215,13 +208,8 @@ Concat.prototype.readContentFromLocal = function(id) {
     else {
         var cmdParser = new CmdParser();
         var ast = cmdParser.getAst(content);
-        if (!ast) {
-            self.logger.error("Parse %s failed", file);
-            return null;
-        }
-        if (ast.error === true) {
-            self.logger.error("Parse %s failed: %s,%s", file, ast.line, ast.col);
-            return null;
+        if (!ast || ast.error) {
+            return content;
         }
         metaAst = cmdParser.parseFirst(ast);
         if (metaAst && self.options.useCache) {
@@ -233,8 +221,7 @@ Concat.prototype.readContentFromLocal = function(id) {
     }
 
     if (!metaAst) {
-        self.logger.warning("%s is not CMD format", file);
-        return null;
+        return content;
     }
 
     self.idCache[metaAst.id] = content;
