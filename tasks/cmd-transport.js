@@ -60,7 +60,6 @@ module.exports = function (grunt, done) {
                 id: 'gallery/handlebars/1.0.2/runtime',
                 knownHelpers: [
                     "if",
-                    "unless",
                     "each"
                 ],
                 knownHelpersOnly: false
