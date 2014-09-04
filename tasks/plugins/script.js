@@ -122,12 +122,10 @@ Script.prototype.execute = function(inputFile) {
 
     // Step 6: 修改成CMD格式
     var modifyOptions = {
-        id: function() {
-            return StringUtils.rstrip(StringUtils.lstrip(
-                StringUtils.lstrip(self.toUnixPath(source), {source: self.options.rootPath}),
-                {source: "/"}
-            ), {source: ".js"});
-        },
+        id: StringUtils.rstrip(StringUtils.lstrip(
+            StringUtils.lstrip(self.toUnixPath(source), {source: self.options.rootPath}),
+            {source: "/"}
+        ), {source: ".js"}),
         dependencies: _.map(newDependencies, function(dependency) {
             var isLocalDependency = false;
             _.each(self.options.paths, function(pathname) {
