@@ -11,7 +11,8 @@ var util = require("util");
 
 var _ = require("underscore");
 var StringUtils = require("underscore.string");
-var Concat = require("./plugins/concat");
+var CmdNice = require("cmd-nice");
+var Concat = CmdNice.Concat;
 var Handlebars = require("handlebars");
 var verboseTemplate = Handlebars.compile(
     "concat: {{{src}}} -> {{{dest}}}"

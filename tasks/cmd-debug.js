@@ -11,7 +11,8 @@ var util = require("util");
 
 var _ = require("underscore");
 var StringUtils = require("underscore.string");
-var Debug = require("./plugins/debug");
+var CmdNice = require("cmd-nice");
+var Debug = CmdNice.Debug;
 var Handlebars = require("handlebars");
 var verboseTemplate = Handlebars.compile(
     "create debug: {{{src}}} -> {{{dest}}}"

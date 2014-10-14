@@ -12,15 +12,8 @@ var util = require("util");
 
 var _ = require("underscore");
 var StringUtils = require("underscore.string");
+var CmdNice = require("cmd-nice");
 
-var HandlebarsTemplate = require("./plugins/handlebars-template");
-var Json = require("./plugins/json");
-var LessStyle = require("./plugins/less-style");
-var SassStyle = require("./plugins/sass-style");
-var Script = require("./plugins/script");
-var Style = require("./plugins/style");
-var Text = require("./plugins/text");
-var UnderscoreTemplate = require("./plugins/underscore-template");
 var Handlebars = require("handlebars");
 var verboseTemplate = Handlebars.compile(
     "transporting: {{{src}}} -> {{{dest}}}"
@@ -40,28 +33,25 @@ module.exports = function (grunt, done) {
     grunt.registerMultiTask('cmd_transport', 'transport cmd', function () {
         var self = this;
         var async = self.async();
-        var options = this.options({
+        var options = self.options({
             useCache: false,
             rootPath: process.cwd(),
             paths: [],
             alias: {},
             aliasPaths: {},
             parsers: {
-                ".handlebars": HandlebarsTemplate,
-                ".json": Json,
-                ".less": LessStyle,
-                ".scss": SassStyle,
-                ".js": Script,
-                ".css": Style,
-                ".html": Text,
-                ".tpl": UnderscoreTemplate
+                ".handlebars": CmdNice.HandlebarsTemplate,
+                ".json": CmdNice.Json,
+                ".less": CmdNice.LessStyle,
+                ".scss": CmdNice.SassStyle,
+                ".js": CmdNice.Script,
+                ".css": CmdNice.Style,
+                ".html": CmdNice.Text,
+                ".tpl": CmdNice.UnderscoreTemplate
             },
             handlebars: {
-                id: 'gallery/handlebars/1.0.2/runtime',
-                knownHelpers: [
-                    "if",
-                    "each"
-                ],
+                id: 'alinw/handlebars/1.3.0/runtime',
+                knownHelpers: [],
                 knownHelpersOnly: false
             },
             sassOptions: {},
