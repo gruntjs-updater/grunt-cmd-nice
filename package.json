@@ -1,50 +1,50 @@
 {
-    "name": "grunt-cmd-nice",
-    "description": "another transport javascript into cmd",
-    "version": "0.3.0",
-    "homepage": "https://github.com/magicsky/grunt-cmd-nice",
-    "author": {
-        "name": "garcia.wul",
-        "email": "garcia.wul@alibaba-inc.com",
-        "url": "https://github.com/magicsky/grunt-cmd-nice"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/magicsky/grunt-cmd-nice.git"
-    },
-    "bugs": {
-        "url": "https://github.com/magicsky/grunt-cmd-nice/issues"
-    },
-    "licenses": [
-        {
-            "type": "MIT",
-            "url": "https://github.com/magicsky/grunt-cmd-nice/blob/master/LICENSE-MIT"
-        }
-    ],
-    "engines": {
-        "node": ">= 0.8.0"
-    },
-    "scripts": {
-        "test": "grunt test"
-    },
-    "devDependencies": {
-        "grunt-contrib-jshint": "~0.6.0",
-        "grunt-contrib-clean": "~0.4.0",
-        "grunt-contrib-nodeunit": "~0.2.0",
-        "grunt": "~0.4.2"
-    },
-    "peerDependencies": {
-        "grunt": "~0.4.2"
-    },
-    "keywords": [
-        "gruntplugin"
-    ],
-    "dependencies": {
-        "cmd-nice": "^0.3.1",
-        "graceful-fs": "^3.0.2",
-        "handlebars": "^2.0.0",
-        "shutils": "0.0.2",
-        "underscore": "^1.6.0",
-        "underscore.string": "^2.3.3"
+  "name": "grunt-cmd-nice",
+  "description": "another transport javascript into cmd",
+  "version": "0.3.1",
+  "homepage": "https://github.com/magicsky/grunt-cmd-nice",
+  "author": {
+    "name": "garcia.wul",
+    "email": "garcia.wul@alibaba-inc.com",
+    "url": "https://github.com/magicsky/grunt-cmd-nice"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/magicsky/grunt-cmd-nice.git"
+  },
+  "bugs": {
+    "url": "https://github.com/magicsky/grunt-cmd-nice/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/magicsky/grunt-cmd-nice/blob/master/LICENSE-MIT"
     }
+  ],
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-contrib-clean": "~0.4.0",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt": "~0.4.2"
+  },
+  "peerDependencies": {
+    "grunt": "~0.4.2"
+  },
+  "keywords": [
+    "gruntplugin"
+  ],
+  "dependencies": {
+    "cmd-nice": "^0.3.2",
+    "graceful-fs": "^3.0.2",
+    "handlebars": "^2.0.0",
+    "shutils": "0.0.2",
+    "underscore": "^1.6.0",
+    "underscore.string": "^2.3.3"
+  }
 }
