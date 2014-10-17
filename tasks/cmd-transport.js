@@ -33,31 +33,7 @@ module.exports = function (grunt, done) {
     grunt.registerMultiTask('cmd_transport', 'transport cmd', function () {
         var self = this;
         var async = self.async();
-        var options = self.options({
-            useCache: false,
-            rootPath: process.cwd(),
-            paths: [],
-            alias: {},
-            aliasPaths: {},
-            parsers: {
-                ".handlebars": CmdNice.HandlebarsTemplate,
-                ".json": CmdNice.Json,
-                ".less": CmdNice.LessStyle,
-                ".scss": CmdNice.SassStyle,
-                ".js": CmdNice.Script,
-                ".css": CmdNice.Style,
-                ".html": CmdNice.Text,
-                ".tpl": CmdNice.UnderscoreTemplate
-            },
-            handlebars: {
-                id: 'alinw/handlebars/1.3.0/runtime',
-                knownHelpers: [],
-                knownHelpersOnly: false
-            },
-            sassOptions: {},
-            lessOptions: {},
-            cssOptions: {}
-        });
+        var options = self.options(require("./transport-config"));
 
         var parsers = {};
 

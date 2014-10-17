@@ -34,20 +34,9 @@ module.exports = function(grunt, done) {
         var async = self.async();
         var options = self.options({
             separator: ";",
-            useCache: false,
+            useCache: true,
             paths: [],
-            alias: {},
-            aliasPaths: {},
-            parsers: {
-                ".handlebars": CmdNice.HandlebarsTemplate,
-                ".json": CmdNice.Json,
-                ".less": CmdNice.LessStyle,
-                ".scss": CmdNice.SassStyle,
-                ".js": CmdNice.Script,
-                ".css": CmdNice.Style,
-                ".html": CmdNice.Text,
-                ".tpl": CmdNice.UnderscoreTemplate
-            }
+            transportConfig: require("./transport-config")
         });
         var concat = new Concat(options);
         var counter = 0;
