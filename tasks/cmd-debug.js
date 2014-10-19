@@ -37,10 +37,6 @@ module.exports = function(grunt, done) {
         });
         var debug = new Debug(options);
         var counter = 0;
-        var statistics = {
-            success: 0,
-            fail: 0
-        };
         var files = _.filter(self.files, function(file) {
             if (_.isArray(file.src) && file.src.length > 0 && fs.existsSync(file.src[0])) {
                 return true;
@@ -73,10 +69,8 @@ module.exports = function(grunt, done) {
                 dest: inputFile.dest.toString().cyan
             }));
             debug.execute(inputFile).then(function(code) {
-                statistics.success += 1;
                 dumpFile(inputFile.dest, code);
             }).fail(function(error) {
-                statistics.fail += 1;
                 if (_.isString(error.level)) {
                     grunt.log[error.level](error.message);
                 }
@@ -90,9 +84,6 @@ module.exports = function(grunt, done) {
                 if (size <= 0) {
                     async();
                     grunt.log.writeln("created " + counter.toString().cyan + " debug files");
-                    if (_.isFunction(done)) {
-                        done(statistics);
-                    }
                 }
             });
         });

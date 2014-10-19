@@ -29,7 +29,7 @@ var dumpFile = function(filename, content) {
     fs.writeFileSync(filename, content, "utf-8");
 };
 
-module.exports = function (grunt, done) {
+module.exports = function (grunt) {
     grunt.registerMultiTask('cmd_transport', 'transport cmd', function () {
         var self = this;
         var async = self.async();
@@ -38,10 +38,6 @@ module.exports = function (grunt, done) {
         var parsers = {};
 
         var counter = 0;
-        var statistics = {
-            success: 0,
-            fail: 0
-        };
         var files = _.filter(self.files, function(file) {
             if (_.isArray(file.src) && file.src.length > 0 && fs.existsSync(file.src[0])) {
                 return true;
@@ -93,10 +89,8 @@ module.exports = function (grunt, done) {
                 dest: inputFile.dest.toString().cyan
             }));
             parser.execute(inputFile).then(function(code) {
-                statistics.success += 1;
                 dumpFile(inputFile.dest, code);
             }).fail(function(error) {
-                statistics.fail += 1;
                 if (_.isObject(error) && _.isString(error.message)) {
                     if (_.isString(error.level)) {
                         grunt.log[error.level](error.message);
@@ -112,9 +106,6 @@ module.exports = function (grunt, done) {
                 if (size <= 0) {
                     async();
                     grunt.log.writeln("transport " + counter.toString().cyan + " files");
-                    if (_.isFunction(done)) {
-                        done(statistics);
-                    }
                 }
             });
         });
