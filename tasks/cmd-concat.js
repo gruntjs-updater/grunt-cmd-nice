@@ -1,5 +1,5 @@
 /**
- * User: garcia.wul (garcia.wul@alibaba-inc.com)
+ * User: Wu Liang ()
  * Date: 2014/05/26
  * Time: 16:16
  *
