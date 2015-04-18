@@ -1,5 +1,5 @@
 /**
- * User: Wu Liang ()
+ * User: Wu Liang
  * Date: 2014/05/26
  * Time: 16:16
  *
